@@ -1,44 +1,125 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LoginPage from './pages/auth/LoginPage';
-import SignupPage from './pages/auth/SignupPage';
-import HomePage from './pages/home/HomePage';
-import ForgotPassword from './auth/ForgotPassword';
-import ResetPassword from './auth/ResetPassword';
-import ProtectedRoute from './auth/ProtectedRoute';
-import Layout from './layout/Layout';
-import CoursesPage from './pages/courses/CoursesPage';
-import ViewAll from './components/ViewAll';
-import Learn from './components/Learn';
-import TutorialPage from './pages/home/TutorialPage';
-import EditProfilePage from './pages/auth/EditProfilePage';
-import Video from './components/Video';
-
-function App() {
+import { Component, Suspense, lazy } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useParams,
+} from "react-router-dom";
+import Shell from "./components/Shell";
+import ResetAuthorization from "./components/ResetAuthorization";
+import Protected from "./components/Protected";
+import { EmptyState, PageSkeleton } from "./components/UI";
+const Landing = lazy(() => import("./pages/Landing"));
+const Explore = lazy(() => import("./pages/Explore"));
+const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const MyLearning = lazy(() => import("./pages/MyLearning"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Learn = lazy(() => import("./pages/Learn"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Profile = lazy(() => import("./pages/Profile"));
+class ErrorBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error) {
+    console.error("LearnHub could not render this view:", error.name);
+  }
+  render() {
+    return this.state.failed ? (
+      <div className="container section">
+        <h1>Let’s get you back on track.</h1>
+        <p>This page couldn’t be displayed. Reload to try again.</p>
+        <button className="button" onClick={() => window.location.reload()}>
+          Reload page
+        </button>
+      </div>
+    ) : (
+      this.props.children
+    );
+  }
+}
+function LegacyCourse({ video }) {
+  const params = useParams();
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* Protected Routes with Layout */}
-        <Route element={<Layout />}>
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path='/courses' element={<CoursesPage />} />
-            <Route path='/course/:playlistId' element={<ViewAll />} />
-            <Route path='/video/:videoId' element={<Video />} />
-            <Route path='/my-learning' element={<Learn />} />
-            <Route path='/tutorial' element={<TutorialPage />} />
-            <Route path='/edit-profile' element={<EditProfilePage />} />
-           
-          </Route>
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <Navigate
+      to={`/courses/${video ? `video-${params.videoId}` : params.playlistId}`}
+      replace
+    />
   );
 }
-
-export default App;
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Suspense fallback={<PageSkeleton />}>
+          <Routes>
+            <Route element={<Shell />}>
+              <Route index element={<Landing />} />
+              <Route path="courses" element={<Explore />} />
+              <Route path="courses/:id" element={<CourseDetail />} />
+              {[
+                "login",
+                "register",
+                "verify-email",
+                "forgot-password",
+                "verify-reset-code",
+              ].map((mode) => (
+                <Route
+                  key={mode}
+                  path={mode}
+                  element={<Auth key={mode} mode={mode} />}
+                />
+              ))}
+              <Route element={<ResetAuthorization />}>
+                <Route
+                  path="reset-password"
+                  element={<Auth key="reset-password" mode="reset-password" />}
+                />
+              </Route>
+              <Route element={<Protected />}>
+                <Route path="my-learning" element={<MyLearning />} />
+                <Route path="tutorials" element={<MyLearning tutorials />} />
+                <Route path="learn/:id" element={<Learn />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="notifications" element={<Notifications />} />
+              </Route>
+              <Route
+                path="signup"
+                element={<Navigate to="/register" replace />}
+              />
+              <Route
+                path="tutorial"
+                element={<Navigate to="/tutorials" replace />}
+              />
+              <Route
+                path="edit-profile"
+                element={<Navigate to="/profile" replace />}
+              />
+              <Route path="course/:playlistId" element={<LegacyCourse />} />
+              <Route path="video/:videoId" element={<LegacyCourse video />} />
+              <Route
+                path="*"
+                element={
+                  <div className="container section">
+                    <EmptyState
+                      title="This page has turned."
+                      to="/courses"
+                      action="Explore courses"
+                    >
+                      We couldn’t find that page. Your next lesson is still
+                      waiting.
+                    </EmptyState>
+                  </div>
+                }
+              />
+            </Route>
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </ErrorBoundary>
+  );
+}
