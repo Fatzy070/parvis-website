@@ -2,9 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>learn-frontend</title>
+    <meta name="theme-color" content="#176354" />
+    <meta
+      name="description"
+      content="A focused space for curious minds. Discover curated programming courses, keep your progress, and learn at your own pace with LearnHub."
+    />
+    <link rel="icon" type="image/x-icon" href="/src/assets/learn.ico" />
+    <title>LearnHub — Stay curious. Keep growing.</title>
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem("learnhub-theme") ||
+          (matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,0 +1,156 @@
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { CheckCircle2, Save } from "lucide-react";
+import { useSession, updateUserCache } from "../queries";
+import { api } from "../api/client";
+import Avatar from "../components/Avatar";
+import { Button, FormError, PageHeading } from "../components/UI";
+export default function Profile() {
+  const { data: user } = useSession();
+  const client = useQueryClient();
+  const [firstName, setFirstName] = useState(user.firstName);
+  const [lastName, setLastName] = useState(user.lastName || "");
+  const [portfolioUrl, setPortfolioUrl] = useState(user.portfolioUrl || "");
+  const save = useMutation({
+    mutationFn: () =>
+      api("/auth/me", {
+        method: "PATCH",
+        body: { firstName, lastName, portfolioUrl },
+      }),
+    onSuccess: (data) => updateUserCache(client, data.user),
+  });
+  const upload = useMutation({
+    mutationFn: async (file) => {
+      if (
+        !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
+        file.size > 5 * 1024 * 1024
+      )
+        throw new Error(
+          "Choose a PNG, JPEG, or WebP image no larger than 5 MB.",
+        );
+      const form = new FormData();
+      form.append("avatar", file);
+      return api("/auth/me/avatar", { method: "POST", body: form });
+    },
+    onSuccess: (data) => updateUserCache(client, data.user),
+  });
+  return (
+    <div className="container section profile-page">
+      <PageHeading eyebrow="YOUR ACCOUNT" title="Make yourself at home.">
+        A few details that make LearnHub yours.
+      </PageHeading>
+      <div className="profile-card">
+        <div className="profile-summary">
+          <Avatar user={user} className="profile-initials" />
+          <div>
+            <h2>
+              {user.firstName} {user.lastName}
+            </h2>
+            <p className="muted">{user.email}</p>
+            <span className="verified">
+              <CheckCircle2 size={15} />
+              Verified email
+            </span>
+          </div>
+        </div>
+        <div className="avatar-upload">
+          <label>
+            Change profile picture
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              disabled={upload.isPending || save.isPending}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) upload.mutate(file);
+                event.target.value = "";
+              }}
+            />
+          </label>
+          <p className="field-hint">
+            PNG, JPEG, or WebP, up to 5 MB. Your photo saves when the upload
+            completes.
+          </p>
+          {upload.isPending && <p role="status">Uploading your photo…</p>}
+          {upload.isSuccess && (
+            <p className="notice" role="status">
+              Your profile picture has been updated.
+            </p>
+          )}
+          <FormError error={upload.error} />
+        </div>
+        <form
+          className="form-stack"
+          onSubmit={(event) => {
+            event.preventDefault();
+            save.mutate();
+          }}
+        >
+          <div className="form-columns">
+            <label>
+              First name
+              <input
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+                autoComplete="given-name"
+                required
+                maxLength={80}
+              />
+            </label>
+            <label>
+              Last name
+              <input
+                value={lastName}
+                onChange={(event) => setLastName(event.target.value)}
+                autoComplete="family-name"
+                maxLength={80}
+              />
+            </label>
+          </div>
+          <label>
+            Portfolio URL
+            <input
+              type="url"
+              value={portfolioUrl}
+              onChange={(event) => setPortfolioUrl(event.target.value)}
+              autoComplete="url"
+              placeholder="https://your-website.com"
+              maxLength={2048}
+            />
+            <span className="field-hint">
+              Your personal website or portfolio. Optional.
+            </span>
+          </label>
+          <FormError error={save.error} />
+          {save.isSuccess && (
+            <p className="notice" role="status">
+              Your profile has been saved.
+            </p>
+          )}
+          <Button
+            pending={save.isPending}
+            disabled={upload.isPending}
+            type="submit"
+          >
+            <Save size={17} />
+            Save changes
+          </Button>
+        </form>
+      </div>
+      <div className="account-note">
+        <h2>Account security</h2>
+        <p className="muted">
+          Need a new password? We’ll send a reset code to your email.
+        </p>
+        <Link
+          className="text-link"
+          to="/forgot-password"
+          state={{ email: user.email }}
+        >
+          Reset your password
+        </Link>
+      </div>
+    </div>
+  );
+}
