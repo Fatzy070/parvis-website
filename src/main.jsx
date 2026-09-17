@@ -5,9 +5,12 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient } from "./queries";
 import App from "./App";
 import "./index.css";
+import { ThemeProvider } from "./components/ThemeProvider";
 const content = (
   <QueryClientProvider client={queryClient}>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </QueryClientProvider>
 );
 createRoot(document.getElementById("root")).render(

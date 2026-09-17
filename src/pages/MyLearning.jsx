@@ -12,6 +12,7 @@ import {
   Progress,
   Button,
 } from "../components/UI";
+import SavedLearning from "../components/SavedLearning";
 export default function MyLearning({ tutorials = false }) {
   const learning = useLearning();
   const session = useSession();
@@ -167,6 +168,7 @@ export default function MyLearning({ tutorials = false }) {
               </Button>
             </div>
           )}
+          {!tutorials && <SavedLearning />}
         </>
       )}
     </div>

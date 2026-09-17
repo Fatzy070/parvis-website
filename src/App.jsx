@@ -84,7 +84,7 @@ export default function App() {
                 <Route path="tutorials" element={<MyLearning tutorials />} />
                 <Route path="learn/:id" element={<Learn />} />
                 <Route path="profile" element={<Profile />} />
-                <Route path="settings" element={<Settings />} />
+                <Route path="settings/:section?" element={<Settings />} />
                 <Route path="notifications" element={<Notifications />} />
               </Route>
               <Route
