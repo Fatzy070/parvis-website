@@ -10,12 +10,17 @@ export const keys = {
   session: ["session"],
   preferences: ["notification-preferences"],
   notifications: ["notifications"],
+  sessions: ["account-sessions"],
   courses: (filters = {}) => ["courses", filters],
   course: (id) => ["course", id],
   learning: ["learning"],
   enrollment: (id) => ["enrollment", id],
   comments: (id, lessonId) => ["comments", id, lessonId || "course"],
   quiz: (id, lessonId) => ["quiz", id, lessonId || "course"],
+  aiSummary: (id, lessonId, mode) => ["ai-summary", id, lessonId, mode],
+  studyNotes: ["study-notes"],
+  practiceQuizzes: ["practice-quizzes"],
+  practicals: ["practicals"],
 };
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -143,6 +148,32 @@ export function useQuizAttempt(id, lessonId) {
   });
 }
 
+export function useAiSummary(id, lessonId) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (mode) => {
+      const key = keys.aiSummary(id, lessonId, mode);
+      const existing = client.getQueryData(key);
+      if (existing) return existing;
+      const data = await api(`/ai/courses/${id}/lessons/${lessonId}/summary`, {
+        method: "POST",
+        body: { mode },
+      });
+      client.setQueryData(key, data);
+      return data;
+    },
+  });
+}
+
+export const useAiExplain = (id, lessonId) =>
+  useMutation({
+    mutationFn: (question) =>
+      api(`/ai/courses/${id}/lessons/${lessonId}/explain`, {
+        method: "POST",
+        body: { question },
+      }),
+  });
+
 export function updateUserCache(client, user) {
   client.setQueryData(keys.session, user);
   client.setQueriesData({ queryKey: ["comments"] }, (data) =>
@@ -183,3 +214,55 @@ export const useNotifications = () =>
       api(`/notifications${search({ cursor: pageParam })}`, { signal }),
     getNextPageParam: (page) => page.nextCursor || undefined,
   });
+
+export const useSessions = () =>
+  useQuery({
+    queryKey: keys.sessions,
+    queryFn: ({ signal }) => api("/auth/me/sessions", { signal }),
+  });
+
+export function useChangePassword() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body) => api("/auth/me/password", { method: "POST", body }),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sessions }),
+  });
+}
+
+export function useRevokeSessions() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (sessionId) =>
+      api(`/auth/me/sessions${sessionId ? `/${sessionId}` : ""}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sessions }),
+  });
+}
+
+export const useSupportRequest = () =>
+  useMutation({
+    mutationFn: (body) => api("/support", { method: "POST", body }),
+  });
+
+export function useGenerateStudyNotes(courseId, lessonId) {
+  return useMutation({ mutationFn: () => api(`/ai/courses/${courseId}/lessons/${lessonId}/study-notes/generate`, { method: "POST", body: {} }) });
+}
+export function useSaveStudyNote() {
+  const client = useQueryClient();
+  return useMutation({ mutationFn: (body) => api("/ai/notes", { method: "POST", body }), onSuccess: () => client.invalidateQueries({ queryKey: keys.studyNotes }) });
+}
+export const useStudyNotes = () => useQuery({ queryKey: keys.studyNotes, queryFn: ({ signal }) => api("/ai/notes", { signal }) });
+export function useNoteMutation(remove = false) {
+  const client = useQueryClient();
+  return useMutation({ mutationFn: ({ id, ...body }) => api(`/ai/notes/${id}`, { method: remove ? "DELETE" : "PATCH", ...(remove ? {} : { body }) }), onSuccess: () => client.invalidateQueries({ queryKey: keys.studyNotes }) });
+}
+export function useGeneratePracticeQuiz(courseId, lessonId) {
+  const client = useQueryClient();
+  return useMutation({ mutationFn: (body) => api(`/ai/courses/${courseId}/lessons/${lessonId}/practice-quizzes`, { method: "POST", body }), onSuccess: () => client.invalidateQueries({ queryKey: keys.practiceQuizzes }) });
+}
+export function usePracticeAttempt() { return useMutation({ mutationFn: ({ id, answers }) => api(`/ai/practice-quizzes/${id}/attempts`, { method: "POST", body: { answers } }) }); }
+export const usePracticeQuizzes = () => useQuery({ queryKey: keys.practiceQuizzes, queryFn: ({ signal }) => api("/ai/practice-quizzes", { signal }) });
+export function useGeneratePractical(courseId, lessonId) { const client = useQueryClient(); return useMutation({ mutationFn: (body) => api(`/ai/courses/${courseId}/lessons/${lessonId}/practicals`, { method: "POST", body }), onSuccess: () => client.invalidateQueries({ queryKey: keys.practicals }) }); }
+export function usePracticalAttempt() { const client = useQueryClient(); return useMutation({ mutationFn: ({ id, ...body }) => api(`/ai/practicals/${id}/attempts`, { method: "POST", body }), onSuccess: () => client.invalidateQueries({ queryKey: keys.practicals }) }); }
+export const usePracticals = () => useQuery({ queryKey: keys.practicals, queryFn: ({ signal }) => api("/ai/practicals", { signal }) });

@@ -12,6 +12,7 @@ import {
 import LessonPlayer from "../components/LessonPlayer";
 import Discussion from "../components/Discussion";
 import Quiz from "../components/Quiz";
+import AiStudyAssistant from "../components/AiStudyAssistant";
 export default function Learn() {
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
@@ -144,7 +145,7 @@ export default function Learn() {
             </Button>
           </div>
           <div className="tabs" aria-label="Lesson information">
-            {["overview", "discussion", "quiz"].map((value) => (
+            {["overview", "assistant", "discussion", "quiz"].map((value) => (
               <button
                 key={value}
                 className={tab === value ? "active" : ""}
@@ -190,6 +191,13 @@ export default function Learn() {
               key={`${id}-${scope}-${lesson.videoId}`}
               courseId={id}
               lessonId={scope === "lesson" ? lesson.videoId : undefined}
+            />
+          )}
+          {tab === "assistant" && (
+            <AiStudyAssistant
+              key={`${id}-${lesson.videoId}`}
+              courseId={id}
+              lessonId={lesson.videoId}
             />
           )}
           {tab === "quiz" && (

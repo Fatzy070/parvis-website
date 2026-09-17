@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -8,9 +9,43 @@ import {
   MessageSquare,
   Bookmark,
   MoveUpRight,
+  BrainCircuit,
+  ShieldCheck,
+  Sparkles,
+  Send,
 } from "lucide-react";
-import { useCourses, useSession } from "../queries";
-import { CourseCard, EmptyState, ErrorState, Skeleton } from "../components/UI";
+import { useCourses, useSession, useSupportRequest } from "../queries";
+import { Button, CourseCard, EmptyState, ErrorState, FormError, Skeleton } from "../components/UI";
+
+function Reveal({ children, className = "" }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || !window.IntersectionObserver) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        node.dataset.visible = "true";
+        observer.disconnect();
+      }
+    }, { threshold: 0.12 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal ${className}`}>{children}</div>;
+}
+
+function SupportForm({ user }) {
+  const support = useSupportRequest();
+  const [form, setForm] = useState({ fullName: user ? `${user.firstName} ${user.lastName}`.trim() : "", email: user?.email || "", category: "general", subject: "", message: "" });
+  const set = (key) => (event) => { setForm({ ...form, [key]: event.target.value }); support.reset(); };
+  if (support.isSuccess) return <div className="support-success" role="status"><CheckCheck size={28} /><h3>Message received.</h3><p>{support.data.message}</p><button className="text-link" onClick={() => { support.reset(); setForm({ ...form, subject: "", message: "" }); }}>Send another message</button></div>;
+  return <form className="support-form form-stack" onSubmit={(event) => { event.preventDefault(); support.mutate(form); }}>
+    <div className="form-columns"><label>Full name<input required minLength="2" maxLength="160" value={form.fullName} onChange={set("fullName")} /></label><label>Email<input required type="email" maxLength="254" value={form.email} onChange={set("email")} /></label></div>
+    <div className="form-columns"><label>Category<select value={form.category} onChange={set("category")}><option value="general">General</option><option value="account">Account</option><option value="technical">Technical</option><option value="course_content">Course content</option><option value="feedback">Feedback</option><option value="other">Other</option></select></label><label>Subject<input required minLength="3" maxLength="160" value={form.subject} onChange={set("subject")} /></label></div>
+    <label>How can we help?<textarea required minLength="10" maxLength="5000" rows="5" value={form.message} onChange={set("message")} /></label>
+    <FormError error={support.error} /><Button type="submit" pending={support.isPending}>Send message <Send size={17} /></Button>
+  </form>;
+}
 export default function Landing() {
   const courses = useCourses({ limit: 3 });
   const session = useSession();
@@ -177,6 +212,15 @@ export default function Landing() {
           </div>
         </div>
       </section>
+      <Reveal>
+        <section className="container section ai-landing">
+          <div className="ai-landing-copy"><p className="eyebrow">STUDY WITH CONTEXT</p><h2>Ask the lesson. Keep your momentum.</h2><p className="muted">The AI Study Assistant works from the lesson you are watching. Request a concise summary, key points, a simpler explanation, or ask a focused question without leaving your course.</p><Link className="text-link" to={session.data ? "/my-learning" : "/register"}>{session.data ? "Open your learning" : "Create an account"} <ArrowRight size={17} /></Link></div>
+          <div className="ai-mode-grid">{[["Summarize", "Short or detailed lesson notes", BrainCircuit], ["Understand", "Explain the lesson in simpler terms", Sparkles], ["Stay secure", "Private backend-only AI access", ShieldCheck]].map(([title, text, Icon]) => <article key={title}><Icon size={24} /><h3>{title}</h3><p>{text}</p></article>)}</div>
+        </section>
+      </Reveal>
+      <Reveal>
+        <section className="support-section" id="support"><div className="container section support-grid"><div><p className="eyebrow">WE’RE HERE TO HELP</p><h2>Questions should not stop your progress.</h2><p className="muted">Tell us what happened and include the details that will help us understand it. Your request is saved securely for the LearnHub team.</p></div><SupportForm user={session.data} /></div></section>
+      </Reveal>
       <section className="container section">
         <div className="landing-cta">
           <div>
