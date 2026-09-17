@@ -12,11 +12,11 @@
     <title>LearnHub — Stay curious. Keep growing.</title>
     <script>
       try {
-        document.documentElement.dataset.theme =
-          localStorage.getItem("learnhub-theme") ||
-          (matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light");
+        const preference = localStorage.getItem("learnhub-theme") || "system";
+        document.documentElement.dataset.themePreference = preference;
+        document.documentElement.dataset.theme = preference === "system"
+          ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+          : preference;
       } catch {}
     </script>
   </head>

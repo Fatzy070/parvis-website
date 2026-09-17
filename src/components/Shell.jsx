@@ -12,21 +12,14 @@ import { api } from "../api/client";
 import { useSession, keys } from "../queries";
 import { FormError } from "./UI";
 import AccountMenu from "./AccountMenu";
+import { useTheme } from "./ThemeProvider";
 export default function Shell() {
-  const [theme, setTheme] = useState(
-    () =>
-      localStorage.getItem("learnhub-theme") ||
-      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
-  );
+  const { resolvedTheme, setTheme } = useTheme();
   const [menu, setMenu] = useState(false);
   const session = useSession();
   const client = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem("learnhub-theme", theme);
-  }, [theme]);
   useEffect(() => {
     const expired = () => {
       client.clear();
@@ -71,10 +64,10 @@ export default function Shell() {
           <div className="header-actions">
             <button
               className="icon-button"
-              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              aria-label={`Switch to ${resolvedTheme === "light" ? "dark" : "light"} mode`}
+              onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
             >
-              {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
+              {resolvedTheme === "light" ? <Moon size={19} /> : <Sun size={19} />}
             </button>
             {session.data ? (
               <AccountMenu

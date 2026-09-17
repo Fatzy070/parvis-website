@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
-const email = `browser-${Date.now()}@example.test`;
+import { randomUUID } from "node:crypto";
+const email = `browser-${randomUUID()}@example.test`;
 const password = "browser-test-passphrase";
 const code = async () =>
   JSON.parse(await readFile("/tmp/learnhub-browser-email.json", "utf8")).code;
