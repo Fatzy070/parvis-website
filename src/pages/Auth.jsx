@@ -78,7 +78,8 @@ export default function Auth({ mode }) {
   const signedIn = async (user) => {
     await client.cancelQueries();
     client.clear();
-    client.setQueryData(keys.session, user);
+    await client.invalidateQueries({ queryKey: keys.session });
+    await client.refetchQueries({ queryKey: keys.session });
     sessionStorage.removeItem("learnhub-verification-email");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
