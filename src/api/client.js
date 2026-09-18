@@ -1,4 +1,10 @@
 const baseURL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+
+const TOKEN_KEY = "learnhub_auth_token";
+export const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
+export const setStoredToken = (token) => { if (token) localStorage.setItem(TOKEN_KEY, token); };
+export const clearStoredToken = () => localStorage.removeItem(TOKEN_KEY);
+
 export class ApiError extends Error {
   constructor(message, status, details = {}) {
     super(message);
@@ -17,6 +23,7 @@ export async function api(
       method,
       credentials: "include",
       headers: {
+        ...(getStoredToken() ? { Authorization: `Bearer ${getStoredToken()}` } : {}),
         ...(body !== undefined && !multipart
           ? { "Content-Type": "application/json" }
           : {}),
@@ -42,10 +49,14 @@ export async function api(
       response.status,
       payload?.error,
     );
-    if (response.status === 401 && !["/auth/login", "/auth/me"].includes(path))
+    if (response.status === 401 && !["/auth/login", "/auth/me"].includes(path)) {
+      clearStoredToken();
       window.dispatchEvent(new Event("learnhub:session-expired"));
+    }
     throw error;
   }
+  if (payload?.data?.token) setStoredToken(payload.data.token);
+  if (path === "/auth/logout" && response.ok) clearStoredToken();
   if (!payload || !("data" in payload))
     throw new ApiError(
       "The server returned an unexpected response. Please try again.",
