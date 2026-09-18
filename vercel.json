@@ -1,3 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://learn-backend-1g6i.onrender.com/api/$1"
+    },
+    { "source": "/(.*)", "destination": "/" }
+  ]
 }
