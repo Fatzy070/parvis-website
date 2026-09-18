@@ -25,7 +25,7 @@ export default function AccountMenu({ user, logout }) {
       className="account-menu"
       ref={root}
       onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
       }}
       onKeyDown={(event) => {
         if (event.key === "Escape") {
