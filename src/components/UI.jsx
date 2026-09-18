@@ -63,6 +63,9 @@ export function FormError({ error }) {
   return error ? (
     <div className="form-error" role="alert">
       {error.message}
+      {["FEATURE_LIMIT_REACHED", "PLAN_UPGRADE_REQUIRED", "ACTIVE_COURSE_LIMIT_REACHED"].includes(error.code) && (
+        <p><Link className="text-link" to="/settings/billing">View plans and usage</Link></p>
+      )}
       {error.fields && (
         <ul>
           {Object.entries(error.fields).map(([key, message]) => (

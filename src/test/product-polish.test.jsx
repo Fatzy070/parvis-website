@@ -8,6 +8,11 @@ import { ThemeProvider } from "../components/ThemeProvider";
 import { keys } from "../queries";
 
 const user = { id: "user-1", firstName: "Faruk", lastName: "Learner", email: "faruk@example.test", emailVerified: true };
+const plans = [
+  { id: "free", name: "Free", amount: 0, currency: "NGN", interval: null, activeCourses: 1, description: "A useful plan.", features: ["Course progress"] },
+  { id: "growth", name: "Growth", amount: 250000, currency: "NGN", interval: "monthly", activeCourses: 3, description: "For consistent study.", features: ["Everything in Free"] },
+  { id: "pro", name: "Pro", amount: 500000, currency: "NGN", interval: "monthly", activeCourses: 7, description: "More capacity.", features: ["Everything in Growth"] },
+];
 const ok = (data) => ({ ok: true, status: 200, json: async () => ({ data }) });
 function mount(content, path = "/") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -45,6 +50,16 @@ it("lists actual sessions and revokes a selected non-current session", async () 
   await waitFor(() => expect(fetch.mock.calls.some(([path, options]) => path.endsWith("/auth/me/sessions/other") && options.method === "DELETE")).toBe(true));
 });
 
+it("renders real billing usage and upgrade choices from the backend", async () => {
+  const billing = { plan: "free", planName: "Free", price: 0, status: "free", activeCourses: { used: 1, limit: 1, remaining: 0 }, usage: { ai_summary: { used: 2, limit: 5, remaining: 3 }, ask_ai: { used: 1, limit: 5, remaining: 4 }, study_notes: { used: 0, limit: 1, remaining: 1 }, practice_quiz: { used: 0, limit: 1, remaining: 1 }, practical_question: { used: 0, limit: 1, remaining: 1 }, practical_feedback: { used: 0, limit: 1, remaining: 1 } } };
+  const fetch = vi.fn().mockImplementation(async (path, options = {}) => options.method === "POST" ? ok({ authorizationUrl: "https://checkout.paystack.com/test", reference: "lh-test" }) : path.endsWith("/billing/plans") ? ok({ items: plans }) : ok(billing));
+  vi.stubGlobal("fetch", fetch);
+  mount(<Routes><Route path="/settings/:section?" element={<Settings />} /></Routes>, "/settings/billing");
+  expect(await screen.findByText("Your usage")).toBeVisible();
+  expect(screen.getByText("2 / 5")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Upgrade to Growth" })).toBeVisible();
+});
+
 it("persists System theme and uses the radial transition only when motion is allowed", async () => {
   const transition = vi.fn((callback) => { callback(); return { ready: Promise.resolve() }; });
   document.startViewTransition = transition;
@@ -62,6 +77,7 @@ it("persists System theme and uses the radial transition only when motion is all
 it("submits the public support form and never fakes a failed request", async () => {
   const fetch = vi.fn().mockImplementation(async (path) => {
     if (path.includes("/courses")) return ok({ items: [], page: 1, hasMore: false });
+    if (path.endsWith("/billing/plans")) return ok({ items: plans });
     return ok({ requestId: "request-1", message: "Your support request has been received." });
   });
   vi.stubGlobal("fetch", fetch);

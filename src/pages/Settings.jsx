@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Link, NavLink, Navigate, useParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, KeyRound, Laptop, Monitor, Moon, Sun, UserRound } from "lucide-react";
+import { Bell, CreditCard, KeyRound, Laptop, Monitor, Moon, Sun, UserRound } from "lucide-react";
 import { keys, useChangePassword, usePreferences, useRevokeSessions, useSession, useSessions } from "../queries";
 import { api } from "../api/client";
 import { useTheme } from "../components/ThemeProvider";
 import Avatar from "../components/Avatar";
+import Billing from "./Billing";
 import { Button, ErrorState, FormError, PageHeading, PageSkeleton } from "../components/UI";
 
 const sections = [
   ["account", "Account", UserRound], ["security", "Security", KeyRound],
   ["notifications", "Notifications", Bell], ["appearance", "Appearance", Sun],
   ["devices", "Devices & sessions", Laptop],
+  ["billing", "Billing", CreditCard],
 ];
 
 function AccountSettings() {
@@ -81,7 +83,7 @@ function DevicesSettings() {
   </section>;
 }
 
-const content = { account: AccountSettings, security: SecuritySettings, notifications: NotificationSettings, appearance: AppearanceSettings, devices: DevicesSettings };
+const content = { account: AccountSettings, security: SecuritySettings, notifications: NotificationSettings, appearance: AppearanceSettings, devices: DevicesSettings, billing: Billing };
 export default function Settings() {
   const { section = "notifications" } = useParams();
   if (!content[section]) return <Navigate to="/settings/account" replace />;

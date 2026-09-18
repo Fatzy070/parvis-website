@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -14,25 +14,10 @@ import {
   Sparkles,
   Send,
 } from "lucide-react";
-import { useCourses, useSession, useSupportRequest } from "../queries";
+import { useBilling, useCheckout, useCourses, usePlans, useSession, useSupportRequest } from "../queries";
 import { Button, CourseCard, EmptyState, ErrorState, FormError, Skeleton } from "../components/UI";
-
-function Reveal({ children, className = "" }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const node = ref.current;
-    if (!node || !window.IntersectionObserver) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        node.dataset.visible = "true";
-        observer.disconnect();
-      }
-    }, { threshold: 0.12 });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  return <div ref={ref} className={`reveal ${className}`}>{children}</div>;
-}
+import { PricingCards } from "../components/BillingUI";
+import Reveal from "../components/Reveal";
 
 function SupportForm({ user }) {
   const support = useSupportRequest();
@@ -49,6 +34,9 @@ function SupportForm({ user }) {
 export default function Landing() {
   const courses = useCourses({ limit: 3 });
   const session = useSession();
+  const plans = usePlans();
+  const billing = useBilling(Boolean(session.data));
+  const checkout = useCheckout();
   return (
     <>
       <section className="hero container">
@@ -217,6 +205,9 @@ export default function Landing() {
           <div className="ai-landing-copy"><p className="eyebrow">STUDY WITH CONTEXT</p><h2>Ask the lesson. Keep your momentum.</h2><p className="muted">The AI Study Assistant works from the lesson you are watching. Request a concise summary, key points, a simpler explanation, or ask a focused question without leaving your course.</p><Link className="text-link" to={session.data ? "/my-learning" : "/register"}>{session.data ? "Open your learning" : "Create an account"} <ArrowRight size={17} /></Link></div>
           <div className="ai-mode-grid">{[["Summarize", "Short or detailed lesson notes", BrainCircuit], ["Understand", "Explain the lesson in simpler terms", Sparkles], ["Stay secure", "Private backend-only AI access", ShieldCheck]].map(([title, text, Icon]) => <article key={title}><Icon size={24} /><h3>{title}</h3><p>{text}</p></article>)}</div>
         </section>
+      </Reveal>
+      <Reveal>
+        <section className="container section pricing-section" id="pricing" aria-labelledby="pricing-heading"><div className="section-heading"><div><p className="eyebrow">PRICING</p><h2 id="pricing-heading">Choose the learning capacity that fits your goals.</h2></div><p className="muted section-intro">Public course videos remain free at their source. LearnHub plans provide the system around them: AI-supported understanding, saved study work, structured practice, progress, and active-course capacity.</p></div>{plans.isPending ? <Skeleton /> : plans.isError ? <ErrorState error={plans.error} retry={plans.refetch} /> : <><PricingCards plans={plans.data.items} currentPlan={billing.data?.plan} authenticated={Boolean(session.data)} onSelect={(value) => checkout.mutate(value)} pendingPlan={checkout.isPending ? checkout.variables : null} /><FormError error={checkout.error || billing.error} /></>}</section>
       </Reveal>
       <Reveal>
         <section className="support-section" id="support"><div className="container section support-grid"><div><p className="eyebrow">WE’RE HERE TO HELP</p><h2>Questions should not stop your progress.</h2><p className="muted">Tell us what happened and include the details that will help us understand it. Your request is saved securely for the LearnHub team.</p></div><SupportForm user={session.data} /></div></section>
