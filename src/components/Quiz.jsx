@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { CheckCircle2, RotateCcw } from "lucide-react";
+import { CheckCircle2, RotateCcw, X, Check } from "lucide-react";
 import { useQuiz, useQuizAttempt } from "../queries";
 import { Button, EmptyState, ErrorState, FormError, Skeleton } from "./UI";
-
-
 
 function QuizForm({ quiz, attempts, courseId, lessonId, reload }) {
   const [started, setStarted] = useState(false);
@@ -19,7 +17,7 @@ function QuizForm({ quiz, attempts, courseId, lessonId, reload }) {
         {quiz.questions.length} questions · {quiz.passingPercent}% to pass ·
         Take your time.
       </p>
-      {result ? (
+      {result && started !== "review" ? (
         <div className="quiz-result" role="status">
           <CheckCircle2 size={34} />
           <strong>{result.score}%</strong>
@@ -34,18 +32,32 @@ function QuizForm({ quiz, attempts, courseId, lessonId, reload }) {
               ? "You passed this quiz."
               : "Revisit the lessons and try again when you’re ready."}
           </p>
-          <Button
-            className="secondary"
-            onClick={() => {
-              submit.reset();
-              setAnswers({});
-              setRequestId(crypto.randomUUID());
-              setStarted(false);
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              justifyContent: "center",
+              flexWrap: "wrap",
             }}
           >
-            <RotateCcw size={16} />
-            Try again
-          </Button>
+            <Button
+              className="secondary"
+              onClick={() => {
+                submit.reset();
+                setAnswers({});
+                setRequestId(crypto.randomUUID());
+                setStarted(false);
+              }}
+            >
+              <RotateCcw size={16} />
+              Try again
+            </Button>
+            {result.review && (
+              <Button onClick={() => setStarted("review")}>
+                Review answers
+              </Button>
+            )}
+          </div>
         </div>
       ) : !started ? (
         <Button
@@ -67,45 +79,124 @@ function QuizForm({ quiz, attempts, courseId, lessonId, reload }) {
             });
           }}
         >
-          {quiz.questions.map((question, index) => (
-            <fieldset className="question" key={question.id}>
-              <legend>
-                {index + 1}. {question.prompt}
-              </legend>
-              {question.options.map((option, optionIndex) => (
-                <label
-                  className={`answer-option ${answers[index] === optionIndex ? "chosen" : ""}`}
-                  key={optionIndex}
-                >
-                  <input
-                    required
-                    type="radio"
-                    name={`question-${question.id}`}
-                    value={optionIndex}
-                    checked={answers[index] === optionIndex}
-                    onChange={() =>
-                      setAnswers({ ...answers, [index]: optionIndex })
-                    }
-                    disabled={submit.isPending}
-                  />
-                  {option}
-                </label>
-              ))}
-            </fieldset>
-          ))}
+          {quiz.questions.map((question, index) => {
+            const review = result?.review?.[index];
+            return (
+              <fieldset className="question" key={question.id}>
+                <legend>
+                  {index + 1}. {question.prompt}
+                </legend>
+                {started === "review" && review ? (
+                  <div className="review-block stack">
+                    <div
+                      className={
+                        review.isCorrect
+                          ? "review-item correct"
+                          : "review-item incorrect"
+                      }
+                    >
+                      <p
+                        className="eyebrow"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        {review.isCorrect ? (
+                          <>
+                            <Check size={16} /> Correct
+                          </>
+                        ) : (
+                          <>
+                            <X size={16} /> Incorrect
+                          </>
+                        )}
+                      </p>
+                      <strong>Your answer:</strong>
+                      <p>
+                        {question.options[review.selectedAnswer] ||
+                          "Not answered"}
+                      </p>
+                    </div>
+                    {!review.isCorrect && (
+                      <div className="notice" style={{ marginBottom: "10px" }}>
+                        <p
+                          className="eyebrow"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <Check size={16} /> Correct answer
+                        </p>
+                        <p>{question.options[review.correctIndex]}</p>
+                      </div>
+                    )}
+                    {review.explanation && (
+                      <div className="notice">
+                        <p className="eyebrow">Explanation</p>
+                        <p>{review.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  question.options.map((option, optionIndex) => (
+                    <label
+                      className={`answer-option ${answers[index] === optionIndex ? "chosen" : ""}`}
+                      key={optionIndex}
+                    >
+                      <input
+                        required
+                        type="radio"
+                        name={`question-${question.id}`}
+                        value={optionIndex}
+                        checked={answers[index] === optionIndex}
+                        onChange={() =>
+                          setAnswers({ ...answers, [index]: optionIndex })
+                        }
+                        disabled={submit.isPending}
+                      />
+                      {option}
+                    </label>
+                  ))
+                )}
+              </fieldset>
+            );
+          })}
           <FormError error={submit.error} />
           {submit.error?.code === "QUIZ_UPDATED" && (
             <Button className="secondary" type="button" onClick={reload}>
               Reload quiz
             </Button>
           )}
-          <Button
-            type="submit"
-            pending={submit.isPending}
-            disabled={Object.keys(answers).length !== quiz.questions.length}
-          >
-            Submit answers
-          </Button>
+          {started === "review" ? (
+            <div className="form-actions" style={{ marginTop: "20px" }}>
+              <Button
+                className="secondary"
+                type="button"
+                onClick={() => {
+                  submit.reset();
+                  setAnswers({});
+                  setRequestId(crypto.randomUUID());
+                  setStarted(false);
+                }}
+              >
+                <RotateCcw size={16} />
+                Try again
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="submit"
+              pending={submit.isPending}
+              pendingText="Checking..."
+              disabled={Object.keys(answers).length !== quiz.questions.length}
+            >
+              Submit answers
+            </Button>
+          )}
         </form>
       )}
       {attempts.length > 0 && (
