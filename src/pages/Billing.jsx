@@ -17,7 +17,22 @@ export default function Billing() {
   if (query.isPending || plans.isPending) return <PageSkeleton />;
   if (query.isError || plans.isError) return <ErrorState error={query.error || plans.error} retry={() => { query.refetch(); plans.refetch(); }} />;
   const billing = query.data; const plan = plans.data.items.find((item) => item.id === billing.plan); const price = new Intl.NumberFormat("en-NG", { style: "currency", currency: plan.currency, maximumFractionDigits: 0 }).format(plan.amount / 100);
-  return <div className="billing-page"><section className="billing-current"><div><p className="eyebrow">CURRENT PLAN</p><div className="billing-title"><h2>{plan.name}</h2><PlanBadge plan={billing.plan} name={plan.name} /></div><p>{price}{billing.plan !== "free" && "/month"}</p><p className="muted">Status: {billing.status.replaceAll("_", " ")}{billing.nextPaymentDate ? ` · Next payment ${new Date(billing.nextPaymentDate).toLocaleDateString()}` : ""}</p>{billing.cancelAtPeriodEnd && <p className="notice">Renewal is cancelled. Paid access remains available through {new Date(billing.currentPeriodEnd).toLocaleDateString()}.</p>}</div>{billing.plan !== "free" && <div className="billing-actions"><button className="button secondary" onClick={() => manage.mutate()} disabled={manage.isPending}>Manage payment method</button>{!billing.cancelAtPeriodEnd && (confirmCancel ? <div className="cancel-confirm"><p>Cancel future renewal? Your current paid period will remain available.</p><button className="button danger" onClick={() => cancel.mutate()} disabled={cancel.isPending}>Confirm cancellation</button><button className="text-link" onClick={() => setConfirmCancel(false)}>Keep plan</button></div> : <button className="text-link" onClick={() => setConfirmCancel(true)}>Cancel renewal</button>)}</div>}</section><FormError error={checkout.error || cancel.error || manage.error} />
+  
+  const hasSub = billing.status !== "free";
+  
+  return <div className="billing-page"><section className="billing-current"><div><p className="eyebrow">CURRENT PLAN</p><div className="billing-title"><h2>{plan.name}</h2><PlanBadge plan={billing.plan} name={plan.name} /></div>
+  
+  {!billing.activeGrants?.length && <p>{price}{billing.plan !== "free" && "/month"}</p>}
+  {hasSub && <p className="muted">Status: {billing.status.replaceAll("_", " ")}{billing.nextPaymentDate ? ` · Next payment ${new Date(billing.nextPaymentDate).toLocaleDateString()}` : ""}</p>}
+  {billing.cancelAtPeriodEnd && <p className="notice">Renewal is cancelled. Paid access remains available through {new Date(billing.currentPeriodEnd).toLocaleDateString()}.</p>}
+  
+  {billing.activeGrants?.length > 0 && billing.activeGrants.map(g => (
+    <p key={g._id} className="notice">
+      Complimentary {g.plan === "pro" ? "Pro" : "Growth"} access · Expires {new Date(g.expiresAt).toLocaleDateString()}
+    </p>
+  ))}
+  
+  </div>{hasSub && <div className="billing-actions"><button className="button secondary" onClick={() => manage.mutate()} disabled={manage.isPending}>Manage payment method</button>{!billing.cancelAtPeriodEnd && (confirmCancel ? <div className="cancel-confirm"><p>Cancel future renewal? Your current paid period will remain available.</p><button className="button danger" onClick={() => cancel.mutate()} disabled={cancel.isPending}>Confirm cancellation</button><button className="text-link" onClick={() => setConfirmCancel(false)}>Keep plan</button></div> : <button className="text-link" onClick={() => setConfirmCancel(true)}>Cancel renewal</button>)}</div>}</section><FormError error={checkout.error || cancel.error || manage.error} />
     <section><h2>Your usage</h2><div className="usage-grid"><UsageMeter label="Active courses" {...billing.activeCourses} />{Object.entries(billing.usage).map(([key, value]) => <UsageMeter key={key} label={labels[key] || key} {...value} />)}</div><p className="field-hint">Provider-backed AI actions count during your current usage period. Cached results do not reduce your allowance.</p></section>
     <section><PageHeading eyebrow="CHOOSE YOUR PACE" title="Plans built around the learning work">You are paying for structure, AI understanding, notes, practice, feedback, and learning capacity—not access to public videos.</PageHeading><PricingCards plans={plans.data.items} currentPlan={billing.plan} authenticated onSelect={(value) => checkout.mutate(value)} pendingPlan={checkout.isPending ? checkout.variables : null} /></section>
   </div>;
