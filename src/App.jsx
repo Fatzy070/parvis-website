@@ -19,6 +19,8 @@ const Learn = lazy(() => import("./pages/Learn"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Profile = lazy(() => import("./pages/Profile"));
+const BillingReturn = lazy(() => import("./pages/BillingReturn"));
+import { About, Blog, BlogPost, Legal } from "./pages/PublicInfo";
 class ErrorBoundary extends Component {
   state = { failed: false };
   static getDerivedStateFromError() {
@@ -60,6 +62,11 @@ export default function App() {
               <Route index element={<Landing />} />
               <Route path="courses" element={<Explore />} />
               <Route path="courses/:id" element={<CourseDetail />} />
+              <Route path="about" element={<About />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="blog/:slug" element={<BlogPost />} />
+              <Route path="privacy" element={<Legal type="privacy" />} />
+              <Route path="terms" element={<Legal type="terms" />} />
               {[
                 "login",
                 "register",
@@ -86,6 +93,7 @@ export default function App() {
                 <Route path="profile" element={<Profile />} />
                 <Route path="settings/:section?" element={<Settings />} />
                 <Route path="notifications" element={<Notifications />} />
+                <Route path="billing/return" element={<BillingReturn />} />
               </Route>
               <Route
                 path="signup"

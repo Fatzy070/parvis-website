@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { GoogleLogin } from "@react-oauth/google";
 import { ArrowRight, MailCheck, Eye, EyeOff, CheckCircle2 } from "lucide-react";
@@ -40,6 +40,7 @@ const copy = {
 };
 export default function Auth({ mode }) {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const client = useQueryClient();
   const session = useSession();
@@ -65,7 +66,8 @@ export default function Auth({ mode }) {
     const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
     return () => clearTimeout(timer);
   }, [cooldown]);
-  const destination =
+  const requestedPlan = ["growth", "pro"].includes(searchParams.get("plan")) ? searchParams.get("plan") : null;
+  const destination = requestedPlan ? `/settings/billing?plan=${requestedPlan}` :
     location.state?.from?.startsWith("/") &&
     !location.state.from.startsWith("//") &&
     !/^\/(login|register|verify-email|forgot-password|verify-reset-code|reset-password)(?:[/?#]|$)/.test(

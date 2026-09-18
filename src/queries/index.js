@@ -21,6 +21,9 @@ export const keys = {
   studyNotes: ["study-notes"],
   practiceQuizzes: ["practice-quizzes"],
   practicals: ["practicals"],
+  billing: ["billing"],
+  plans: ["billing-plans"],
+  blog: (slug = "list") => ["blog", slug],
 };
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -266,3 +269,20 @@ export const usePracticeQuizzes = () => useQuery({ queryKey: keys.practiceQuizze
 export function useGeneratePractical(courseId, lessonId) { const client = useQueryClient(); return useMutation({ mutationFn: (body) => api(`/ai/courses/${courseId}/lessons/${lessonId}/practicals`, { method: "POST", body }), onSuccess: () => client.invalidateQueries({ queryKey: keys.practicals }) }); }
 export function usePracticalAttempt() { const client = useQueryClient(); return useMutation({ mutationFn: ({ id, ...body }) => api(`/ai/practicals/${id}/attempts`, { method: "POST", body }), onSuccess: () => client.invalidateQueries({ queryKey: keys.practicals }) }); }
 export const usePracticals = () => useQuery({ queryKey: keys.practicals, queryFn: ({ signal }) => api("/ai/practicals", { signal }) });
+
+export const usePlans = () => useQuery({ queryKey: keys.plans, queryFn: ({ signal }) => api("/billing/plans", { signal }), staleTime: 60 * 60000 });
+export const useBlogPosts = () => useQuery({ queryKey: keys.blog(), queryFn: ({ signal }) => api("/blog/posts", { signal }), staleTime: 5 * 60000 });
+export const useBlogPost = (slug) => useQuery({ queryKey: keys.blog(slug), queryFn: ({ signal }) => api(`/blog/posts/${encodeURIComponent(slug)}`, { signal }), enabled: Boolean(slug), staleTime: 5 * 60000 });
+export const useBilling = (enabled = true) => useQuery({ queryKey: keys.billing, queryFn: ({ signal }) => api("/billing", { signal }), staleTime: 30000, enabled });
+export function useCheckout() {
+  return useMutation({ mutationFn: (plan) => api("/billing/checkout", { method: "POST", body: { plan } }), onSuccess: ({ authorizationUrl }) => window.location.assign(authorizationUrl) });
+}
+export function useConfirmCheckout(reference) {
+  const client = useQueryClient();
+  return useQuery({ queryKey: ["billing-confirm", reference], queryFn: ({ signal }) => api(`/billing/confirm?reference=${encodeURIComponent(reference)}`, { signal }), enabled: Boolean(reference), retry: (count, error) => count < 4 && [409, 502, 503].includes(error.status), retryDelay: 1500, refetchInterval: (query) => query.state.status === "success" ? false : 2000, onSuccess: () => client.invalidateQueries({ queryKey: keys.billing }) });
+}
+export function useCancelSubscription() {
+  const client = useQueryClient();
+  return useMutation({ mutationFn: () => api("/billing/cancel", { method: "POST" }), onSuccess: (data) => client.setQueryData(keys.billing, data) });
+}
+export const useBillingManagement = () => useMutation({ mutationFn: () => api("/billing/management", { method: "POST" }), onSuccess: ({ url }) => window.location.assign(url) });

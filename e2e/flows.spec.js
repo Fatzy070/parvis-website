@@ -239,6 +239,23 @@ test("responsive light and dark views remain keyboard-accessible and fit the vie
   }
 });
 
+test("public pricing, About, Blog, support and footer routes remain complete", async ({ page }) => {
+  await page.goto("/#pricing");
+  await expect(page.getByRole("heading", { name: "Choose the learning capacity that fits your goals." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Free", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Growth", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pro", exact: true })).toBeVisible();
+  await expect(page.getByText("₦2,500")).toBeVisible();
+  await page.getByRole("contentinfo").getByRole("link", { name: "About" }).click();
+  await expect(page.getByRole("heading", { name: "Public learning content, shaped into a learning system" })).toBeVisible();
+  await page.getByRole("contentinfo").getByRole("link", { name: "Blog" }).click();
+  await expect(page.getByRole("heading", { name: "Useful learning ideas will live here." })).toBeVisible();
+  await page.getByRole("link", { name: "Suggest a topic" }).click();
+  await expect(page.getByRole("heading", { name: "Questions should not stop your progress." })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+});
+
 test("real request delay shows skeletons and failed discovery has a working retry", async ({
   page,
 }) => {

@@ -30,10 +30,15 @@ export default function Shell() {
       window.removeEventListener("learnhub:session-expired", expired);
   }, [client]);
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const frame = requestAnimationFrame(() => {
+      if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+      else window.scrollTo({ top: 0, behavior: "auto" });
+    });
     const heading = document.querySelector("main h1");
     if (heading) document.title = `${heading.textContent} · LearnHub`;
-  }, [location.pathname]);
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname, location.hash]);
   const logout = useMutation({
     mutationFn: () => api("/auth/logout", { method: "POST" }),
     onSuccess: async () => {
@@ -60,6 +65,7 @@ export default function Shell() {
             <NavLink to="/courses">Explore</NavLink>
             <NavLink to="/my-learning">My learning</NavLink>
             <NavLink to="/tutorials">Tutorials</NavLink>
+            <Link to="/#pricing">Pricing</Link>
           </nav>
           <div className="header-actions">
             <button
@@ -102,6 +108,7 @@ export default function Shell() {
               ["/courses", "Explore courses"],
               ["/my-learning", "My learning"],
               ["/tutorials", "Tutorials"],
+              ["/#pricing", "Pricing"],
               [
                 session.data ? "/profile" : "/login",
                 session.data ? "Your profile" : "Sign in",
@@ -138,13 +145,15 @@ export default function Shell() {
             <Link className="brand" to="/">
               <BookOpen size={20} /> learnhub.
             </Link>
-            <p>A little progress. A world of possibility.</p>
+            <p>Turn great public learning content into structured progress, understanding, and practice.</p>
           </div>
-          <nav aria-label="Footer">
-            <Link to="/courses">Explore courses</Link>
-            <Link to="/my-learning">My learning</Link>
-            <Link to="/profile">Account</Link>
-          </nav>
+          <div className="footer-links">
+            <nav aria-label="LearnHub"><strong>LearnHub</strong><Link to="/about">About</Link><Link to="/blog">Blog</Link><Link to="/#support">Contact and support</Link></nav>
+            <nav aria-label="Learn"><strong>Learn</strong><Link to="/courses">Explore courses</Link>{session.data && <Link to="/my-learning">My learning</Link>}{session.data && <Link to="/tutorials">Tutorials</Link>}</nav>
+            <nav aria-label="Product"><strong>Product</strong><Link to="/#pricing">Pricing</Link><Link to={session.data ? "/my-learning" : "/register"}>AI Study Assistant</Link><Link to={session.data ? "/my-learning" : "/register"}>Study Notes</Link></nav>
+            {session.data && <nav aria-label="Account"><strong>Account</strong><Link to="/profile">Profile</Link><Link to="/settings">Settings</Link><Link to="/settings/billing">Billing</Link></nav>}
+            <nav aria-label="Legal"><strong>Legal</strong><Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link></nav>
+          </div>
           <p>
             © {new Date().getFullYear()} LearnHub
             <br />
