@@ -20,6 +20,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Profile = lazy(() => import("./pages/Profile"));
 const BillingReturn = lazy(() => import("./pages/BillingReturn"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 import { About, Blog, BlogPost, Legal } from "./pages/PublicInfo";
 class ErrorBoundary extends Component {
   state = { failed: false };
@@ -95,6 +96,7 @@ export default function App() {
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="billing/return" element={<BillingReturn />} />
               </Route>
+              <Route path="welcome" element={<Onboarding />} />
               <Route
                 path="signup"
                 element={<Navigate to="/register" replace />}
