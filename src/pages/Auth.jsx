@@ -2,10 +2,21 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { GoogleLogin } from "@react-oauth/google";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, MailCheck, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { api } from "../api/client";
 import { keys, useSession } from "../queries";
 import { Button, FormError } from "../components/UI";
+
+const ONBOARDING_MARKER = "learnhub-post-signup";
+
+/** Framer Motion variants for auth step transitions. */
+const authStepVariants = {
+  enter: { opacity: 0, y: 10 },
+  center: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+const authStepTransition = { duration: 0.2, ease: [0.4, 0, 0.2, 1] };
 const copy = {
   login: [
     "WELCOME BACK",
@@ -87,6 +98,7 @@ export default function Auth({ mode }) {
   };
   const verifyRedirect = (data, notice = "") => {
     sessionStorage.setItem("learnhub-verification-email", email);
+    sessionStorage.setItem(ONBOARDING_MARKER, "1");
     navigate("/verify-email", {
       state: {
         email,
@@ -115,6 +127,21 @@ export default function Auth({ mode }) {
       }),
     onSuccess: async (data) => {
       if (data.user) {
+        const isPostSignup =
+          mode === "verify-email" &&
+          sessionStorage.getItem(ONBOARDING_MARKER) === "1";
+        if (isPostSignup) {
+          sessionStorage.removeItem("learnhub-verification-email");
+          await client.cancelQueries();
+          client.clear();
+          await client.invalidateQueries({ queryKey: keys.session });
+          await client.refetchQueries({ queryKey: keys.session });
+          navigate("/welcome", {
+            replace: true,
+            state: { destination },
+          });
+          return;
+        }
         await signedIn(data.user);
         return;
       }
@@ -209,7 +236,16 @@ export default function Auth({ mode }) {
           YOUR LEARNING JOURNEY, ALL TOGETHER.
         </span>
       </aside>
-      <section className="auth-form-panel">
+      <AnimatePresence mode="wait">
+        <motion.section
+          key={mode}
+          className="auth-form-panel"
+          variants={authStepVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={authStepTransition}
+        >
         <p className="eyebrow">{eyebrow}</p>
         {mode === "verify-email" && (
           <MailCheck className="auth-icon" size={38} />
@@ -420,7 +456,8 @@ export default function Auth({ mode }) {
             <Link to="/login">Back to sign in</Link>
           </p>
         )}
-      </section>
+        </motion.section>
+      </AnimatePresence>
     </div>
   );
 }
