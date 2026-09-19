@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Save } from "lucide-react";
-import { useSession, updateUserCache } from "../queries";
+import { useSession, updateUserCache, useAchievements } from "../queries";
+
 import { api } from "../api/client";
 import Avatar from "../components/Avatar";
 import { Button, FormError, PageHeading } from "../components/UI";
@@ -151,6 +152,91 @@ export default function Profile() {
           Reset your password
         </Link>
       </div>
+
+      <AchievementsSection />
     </div>
   );
 }
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function AchievementsSection() {
+  const { data, isPending } = useAchievements();
+  const achievements = data?.data?.achievements || [];
+
+  return (
+    <div className="account-note" style={{ marginTop: "24px" }}>
+      <h2>Achievements</h2>
+      <p className="muted">
+        Monthly recognition awarded by LearnHub for your learning activity, consistency, and performance.
+      </p>
+
+      {isPending ? (
+        <p className="muted">Loading achievements…</p>
+      ) : achievements.length === 0 ? (
+        <p className="muted" style={{ fontStyle: "italic" }}>
+          No approved achievements yet. Keep learning consistently!
+        </p>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px", marginTop: "16px" }}>
+          {achievements.map((item) => {
+            const monthName = MONTH_NAMES[item.month - 1] || "";
+            const snap = item.metricsSnapshot || {};
+
+            return (
+              <div
+                key={item._id}
+                style={{
+                  padding: "16px",
+                  borderRadius: "10px",
+                  backgroundColor: "var(--bg-subtle, #fafaf6)",
+                  border: "1px solid var(--border-color, #dce2d9)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "24px" }}>🏆</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: "16px", color: "var(--brand-primary, #176354)" }}>
+                      {item.title}
+                    </h3>
+                    <small className="muted">
+                      {monthName} {item.year}
+                    </small>
+                  </div>
+                </div>
+
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--color-text-secondary, #667069)" }}>
+                  Recognized for outstanding learning activity, consistency, and performance during {monthName} {item.year}.
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginTop: "8px",
+                    fontSize: "12px",
+                    color: "var(--color-text-primary, #22382f)",
+                  }}
+                >
+                  {snap.activeDays > 0 && <span>🔥 {snap.activeDays} active days</span>}
+                  {snap.uniqueQuizzes > 0 && <span>📝 {snap.uniqueQuizzes} unique quizzes</span>}
+                  {snap.qualifyingQuizAverage > 0 && <span>🎯 {snap.qualifyingQuizAverage}% avg</span>}
+                  {snap.uniquePracticals > 0 && <span>💻 {snap.uniquePracticals} practicals</span>}
+                  {snap.coursesCompleted > 0 && <span>🎓 {snap.coursesCompleted} courses</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+

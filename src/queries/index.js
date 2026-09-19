@@ -24,7 +24,9 @@ export const keys = {
   billing: ["billing"],
   plans: ["billing-plans"],
   blog: (slug = "list") => ["blog", slug],
+  achievements: ["achievements"],
 };
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -56,6 +58,7 @@ export const useCourses = (filters = {}) =>
     queryFn: ({ signal }) => api(`/courses${search(filters)}`, { signal }),
     staleTime: 5 * 60000,
   });
+  
 export const useCourse = (id) =>
   useQuery({
     queryKey: keys.course(id),
@@ -286,3 +289,5 @@ export function useCancelSubscription() {
   return useMutation({ mutationFn: () => api("/billing/cancel", { method: "POST" }), onSuccess: (data) => client.setQueryData(keys.billing, data) });
 }
 export const useBillingManagement = () => useMutation({ mutationFn: () => api("/billing/management", { method: "POST" }), onSuccess: ({ url }) => window.location.assign(url) });
+export const useAchievements = () => useQuery({ queryKey: keys.achievements, queryFn: ({ signal }) => api("/auth/me/achievements", { signal }), staleTime: 60 * 1000 });
+
