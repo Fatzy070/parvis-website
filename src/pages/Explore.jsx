@@ -55,16 +55,48 @@ export default function Explore() {
         <Button type="submit">Search</Button>
       </form>
       <div className="filters" aria-label="Filter by subject">
-        {["", ...(courses.data?.categories || [])].map((item) => (
+        <button
+          className={category === "" ? "chip selected" : "chip"}
+          aria-pressed={category === ""}
+          onClick={() => change({ category: "", page: 1 })}
+        >
+          All subjects
+        </button>
+        {(courses.data?.categories || []).slice(0, 5).map((item) => (
           <button
             key={item}
             className={category === item ? "chip selected" : "chip"}
             aria-pressed={category === item}
             onClick={() => change({ category: item, page: 1 })}
           >
-            {item || "All subjects"}
+            {item}
           </button>
         ))}
+        {courses.data?.categories?.length > 5 && (
+          <select
+            className={
+              category && (courses.data?.categories || []).slice(5).includes(category)
+                ? "chip selected select-chip"
+                : "chip select-chip"
+            }
+            value={
+              category && (courses.data?.categories || []).slice(5).includes(category)
+                ? category
+                : ""
+            }
+            onChange={(e) => change({ category: e.target.value, page: 1 })}
+            aria-label="More subjects"
+          >
+            <option value="" disabled>
+              More subjects...
+            </option>
+            {(courses.data?.categories || []).slice(5).map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
       {courses.isPending ? (
         <Skeleton cards={6} />
