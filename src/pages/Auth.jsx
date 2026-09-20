@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GoogleLogin } from "@react-oauth/google";
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, MailCheck, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { api } from "../api/client";
 import { keys, useSession } from "../queries";
-import { Button, FormError } from "../components/UI";
+import { Button, FormError, PageSkeleton } from "../components/UI";
 
 const ONBOARDING_MARKER = "learnhub-post-signup";
 
@@ -77,6 +78,25 @@ export default function Auth({ mode }) {
     const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
     return () => clearTimeout(timer);
   }, [cooldown]);
+
+  const resetAuth = useQuery({
+    queryKey: ["reset-authorization"],
+    queryFn: ({ signal }) => api("/auth/reset-authorization", { signal }),
+    enabled: mode === "reset-password",
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  const [expired, setExpired] = useState(false);
+  useEffect(() => {
+    if (mode !== "reset-password" || !resetAuth.data?.expiresAt) return;
+    const timer = setTimeout(
+      () => setExpired(true),
+      Math.max(0, new Date(resetAuth.data.expiresAt).getTime() - Date.now()),
+    );
+    return () => clearTimeout(timer);
+  }, [mode, resetAuth.data?.expiresAt]);
   const requestedPlan = ["growth", "pro"].includes(searchParams.get("plan")) ? searchParams.get("plan") : null;
   const destination = requestedPlan ? `/settings/billing?plan=${requestedPlan}` :
     location.state?.from?.startsWith("/") &&
@@ -86,7 +106,7 @@ export default function Auth({ mode }) {
     )
       ? location.state.from
       : "/my-learning";
-  const signedIn = async (user) => {
+  const signedIn = async () => {
     await client.cancelQueries();
     client.clear();
     await client.invalidateQueries({ queryKey: keys.session });
@@ -142,7 +162,7 @@ export default function Auth({ mode }) {
           });
           return;
         }
-        await signedIn(data.user);
+        await signedIn();
         return;
       }
       if (mode === "register") {
@@ -157,7 +177,7 @@ export default function Auth({ mode }) {
         return;
       }
       if (mode === "verify-reset-code") {
-        client.removeQueries({ queryKey: ["reset-authorization"] });
+        client.setQueryData(["reset-authorization"], data);
         navigate("/reset-password", { replace: true, state: { email } });
         return;
       }
@@ -207,12 +227,30 @@ export default function Auth({ mode }) {
   const google = useMutation({
     mutationFn: (credential) =>
       api("/auth/google", { method: "POST", body: { credential } }),
-    onSuccess: (data) => signedIn(data.user),
+    onSuccess: () => signedIn(),
   });
   if (session.data && ["login", "register", "verify-email"].includes(mode))
     return <Navigate to={destination} replace />;
+
   const [eyebrow, title, description] = copy[mode];
   const isCode = ["verify-email", "verify-reset-code"].includes(mode);
+
+  if (mode === "reset-password") {
+    if (resetAuth.isPending) return <PageSkeleton />;
+    if (resetAuth.isError || !resetAuth.data?.authorized || expired) {
+      return (
+        <Navigate
+          to="/forgot-password"
+          replace
+          state={{
+            email,
+            notice: "Verify a new reset code before choosing your password.",
+          }}
+        />
+      );
+    }
+  }
+
   return (
     <div className="auth-layout container">
       <aside className="auth-story">
