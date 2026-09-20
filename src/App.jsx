@@ -7,7 +7,6 @@ import {
   useParams,
 } from "react-router-dom";
 import Shell from "./components/Shell";
-import ResetAuthorization from "./components/ResetAuthorization";
 import Protected from "./components/Protected";
 import { EmptyState, PageSkeleton } from "./components/UI";
 const Landing = lazy(() => import("./pages/Landing"));
@@ -74,19 +73,14 @@ export default function App() {
                 "verify-email",
                 "forgot-password",
                 "verify-reset-code",
+                "reset-password",
               ].map((mode) => (
                 <Route
                   key={mode}
                   path={mode}
-                  element={<Auth key={mode} mode={mode} />}
+                  element={<Auth mode={mode} />}
                 />
               ))}
-              <Route element={<ResetAuthorization />}>
-                <Route
-                  path="reset-password"
-                  element={<Auth key="reset-password" mode="reset-password" />}
-                />
-              </Route>
               <Route element={<Protected />}>
                 <Route path="my-learning" element={<MyLearning />} />
                 <Route path="tutorials" element={<MyLearning tutorials />} />
