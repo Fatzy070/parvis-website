@@ -5,6 +5,10 @@ export const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
 export const setStoredToken = (token) => { if (token) localStorage.setItem(TOKEN_KEY, token); };
 export const clearStoredToken = () => localStorage.removeItem(TOKEN_KEY);
 
+const DEVICE_KEY = "learnhub_device_id";
+export const getStoredDevice = () => localStorage.getItem(DEVICE_KEY);
+export const setStoredDevice = (token) => { if (token) localStorage.setItem(DEVICE_KEY, token); };
+
 export class ApiError extends Error {
   constructor(message, status, details = {}) {
     super(message);
@@ -24,6 +28,7 @@ export async function api(
       credentials: "include",
       headers: {
         ...(getStoredToken() ? { Authorization: `Bearer ${getStoredToken()}` } : {}),
+        ...(getStoredDevice() ? { "x-device-id": getStoredDevice() } : {}),
         ...(body !== undefined && !multipart
           ? { "Content-Type": "application/json" }
           : {}),
@@ -56,6 +61,7 @@ export async function api(
     throw error;
   }
   if (payload?.data?.token) setStoredToken(payload.data.token);
+  if (payload?.data?.deviceToken) setStoredDevice(payload.data.deviceToken);
   if (path === "/auth/logout" && response.ok) clearStoredToken();
   if (!payload || !("data" in payload))
     throw new ApiError(

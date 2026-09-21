@@ -149,13 +149,25 @@ export function CourseCard({ course, enrollment }) {
                 {enrollment.completedLessons.length} of{" "}
                 {enrollment.totalLessons} lessons
               </span>
-              <Link to={to} aria-label={`Continue ${course.title}`}>
-                {enrollment.completed ? (
-                  <Check size={18} />
-                ) : (
-                  <ArrowRight size={18} />
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                {enrollment.certificateId && (
+                   <a 
+                     href={`/api/courses/certificates/${enrollment.certificateId}`} 
+                     target="_blank" 
+                     className="text-link" 
+                     style={{ fontSize: "0.85em" }}
+                   >
+                     Certificate
+                   </a>
                 )}
-              </Link>
+                <Link to={to} aria-label={`Continue ${course.title}`}>
+                  {enrollment.completed ? (
+                    <Check size={18} />
+                  ) : (
+                    <ArrowRight size={18} />
+                  )}
+                </Link>
+              </div>
             </div>
           </>
         ) : (
