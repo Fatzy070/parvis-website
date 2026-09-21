@@ -40,14 +40,121 @@ function SecuritySettings() {
   </form>;
 }
 
+function ReminderTimeSelector({ value, onChange }) {
+  const parseTime = (timeStr) => {
+    const [hStr, mStr] = (timeStr || "19:00").split(":");
+    let h = parseInt(hStr, 10);
+    const m = mStr;
+    const period = h >= 12 ? "PM" : "AM";
+    let hour12 = h % 12;
+    if (hour12 === 0) hour12 = 12;
+    return { hour12: String(hour12), minute: m, period };
+  };
+
+  const { hour12, minute, period } = parseTime(value);
+
+  const handleChange = (newH, newM, newP) => {
+    let h = parseInt(newH, 10);
+    if (newP === "AM" && h === 12) h = 0;
+    if (newP === "PM" && h !== 12) h += 12;
+    onChange(`${String(h).padStart(2, '0')}:${newM.padStart(2, '0')}`);
+  };
+
+  return (
+    <div className="time-selector" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
+      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+        <select style={{ width: 'auto', minWidth: '4rem' }} value={hour12} onChange={(e) => handleChange(e.target.value, minute, period)}>
+          {Array.from({ length: 12 }).map((_, i) => (
+            <option key={i + 1} value={String(i + 1)}>{i + 1}</option>
+          ))}
+        </select>
+        <span style={{ fontWeight: 600 }}>:</span>
+        <select style={{ width: 'auto', minWidth: '4rem' }} value={minute} onChange={(e) => handleChange(hour12, e.target.value, period)}>
+          {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map((m) => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
+      </div>
+      <select style={{ width: 'auto', minWidth: '5rem' }} value={period} onChange={(e) => handleChange(hour12, minute, e.target.value)}>
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
+  );
+}
+
 function PreferencesForm({ preferences }) {
   const client = useQueryClient();
   const [draft, setDraft] = useState(preferences);
-  const save = useMutation({ mutationFn: () => api("/auth/me/notification-preferences", { method: "PATCH", body: draft }), onSuccess: (data) => { client.setQueryData(keys.preferences, data); client.invalidateQueries({ queryKey: keys.session }); } });
+  const save = useMutation({ 
+    mutationFn: () => {
+      const payload = { ...draft };
+      if (payload.studyReminder) {
+        payload.studyReminder.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      }
+      return api("/auth/me/notification-preferences", { method: "PATCH", body: payload });
+    }, 
+    onSuccess: (data) => { client.setQueryData(keys.preferences, data); client.invalidateQueries({ queryKey: keys.session }); } 
+  });
   return <form className="settings-card form-stack" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}>
     <h2>Notification preferences</h2>
     {[["email", "Email notifications", "Course and enrollment updates."], ["inApp", "In-app notifications", "Updates in your LearnHub inbox."]].map(([key, label, description]) => <label className="preference-row" key={key}><span><strong>{label}</strong><span className="muted">{description}</span></span><input type="checkbox" checked={draft[key]} onChange={(event) => { setDraft({ ...draft, [key]: event.target.checked }); save.reset(); }} /></label>)}
     <p className="field-hint">Verification, password reset, welcome, and security emails always remain enabled.</p>
+    
+    <div className="section-divider" style={{ margin: "24px 0", borderTop: "1px solid var(--border-subtle)" }}></div>
+    <h2>Learning reminders</h2>
+    <label className="preference-row">
+      <span><strong>Daily study reminder</strong><span className="muted">Receive an in-app notification when it's time to learn.</span></span>
+      <input type="checkbox" checked={draft.studyReminder?.enabled || false} onChange={(event) => { setDraft({ ...draft, studyReminder: { ...draft.studyReminder, enabled: event.target.checked } }); save.reset(); }} />
+    </label>
+    {draft.studyReminder?.enabled && (
+      <label>Reminder time
+        <ReminderTimeSelector value={draft.studyReminder?.time || "19:00"} onChange={(time) => { setDraft({ ...draft, studyReminder: { ...draft.studyReminder, time } }); save.reset(); }} />
+      </label>
+    )}
+
+    <div className="section-divider" style={{ margin: "24px 0", borderTop: "1px solid var(--border-subtle)" }}></div>
+    <h2>Browser notifications</h2>
+    <label className="preference-row">
+      <span><strong>Push notifications</strong><span className="muted">Receive alerts on your device even when LearnHub is closed.</span></span>
+      <input type="checkbox" checked={draft.webPush?.enabled || false} onChange={async (event) => { 
+        const enabled = event.target.checked;
+        setDraft({ ...draft, webPush: { ...draft.webPush, enabled } });
+        save.reset();
+        
+        if (enabled && 'serviceWorker' in navigator && 'PushManager' in window) {
+          try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+              const registration = await navigator.serviceWorker.ready;
+              const { data: { publicKey } } = await api("/auth/web-push/vapid", { method: "GET" });
+              
+              const base64ToUint8Array = (base64) => {
+                const padding = '='.repeat((4 - base64.length % 4) % 4);
+                const b64 = (base64 + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(b64);
+                return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+              };
+              
+              const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: base64ToUint8Array(publicKey)
+              });
+              await api("/auth/web-push/subscribe", { method: "POST", body: subscription.toJSON() });
+            } else {
+              setDraft({ ...draft, webPush: { ...draft.webPush, enabled: false } });
+            }
+          } catch (err) {
+            console.error("Push notification setup failed:", err);
+            setDraft({ ...draft, webPush: { ...draft.webPush, enabled: false } });
+          }
+        } else if (!enabled) {
+          await api("/auth/web-push/toggle", { method: "POST", body: { enabled: false } });
+        }
+      }} />
+    </label>
+
+
     <FormError error={save.error} />
     {save.isSuccess && <p className="notice" role="status">Your notification preferences have been saved.</p>}
     <Button type="submit" pending={save.isPending}>Save preferences</Button>

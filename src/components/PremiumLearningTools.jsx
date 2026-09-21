@@ -213,7 +213,7 @@ function Practice({ courseId, lessonId }) {
                         setAnswers(next);
                       }}
                     />
-                    {option}
+                    <span>{option}</span>
                   </label>
                 ))
               )}
