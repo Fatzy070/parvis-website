@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button, PageSkeleton, ErrorState } from "../components/UI";
 import { Check, Download, ExternalLink } from "lucide-react";
-import { client } from "../api/client";
+import { api } from "../api/client";
 
 export default function CertificateView() {
   const { id } = useParams();
@@ -13,7 +13,7 @@ export default function CertificateView() {
   useEffect(() => {
     async function fetchCertificate() {
       try {
-        const response = await client(`/api/my-learning/certificates/${id}/verify`);
+        const response = await api(`/my-learning/certificates/${id}/verify`);
         setCert(response);
       } catch (err) {
         setError(err);
