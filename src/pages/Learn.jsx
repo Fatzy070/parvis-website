@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, Play, ListVideo } from "lucide-react";
 import { useCourse, useEnrollment, useProgress } from "../queries";
+import { SEO } from "../components/SEO";
 import {
   Button,
   EmptyState,
@@ -43,6 +44,7 @@ export default function Learn() {
   if (!enrollment)
     return (
       <div className="container section">
+        <SEO title={`${course.title} | LearnHub`} noindex />
         <EmptyState
           title="Make this course part of your journey"
           to={`/courses/${id}`}
@@ -59,12 +61,13 @@ export default function Learn() {
   if (!lesson)
     return (
       <div className="container section">
+        <SEO title={`${course.title} | LearnHub`} noindex />
         <EmptyState
-          title="No available lessons"
+          title="Lesson not found"
           to={`/courses/${id}`}
           action="Back to course"
         >
-          The creator may have removed this content.
+          This lesson doesn't exist in the curriculum.
         </EmptyState>
       </div>
     );
@@ -81,6 +84,7 @@ export default function Learn() {
   };
   return (
     <div className="learning-container">
+      <SEO title={`${lesson.title} - ${course.title} | LearnHub`} noindex />
       <div className="learning-top">
         <Link className="back-link" to="/my-learning">
           <ArrowLeft size={16} />

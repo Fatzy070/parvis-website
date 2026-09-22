@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button, PageSkeleton, ErrorState, EmptyState } from "../components/UI";
 import { Check, Download, ExternalLink } from "lucide-react";
 import { api } from "../api/client";
+import { SEO } from "../components/SEO";
 
 export default function CertificateView() {
   const { id } = useParams();
@@ -56,6 +57,11 @@ export default function CertificateView() {
 
   return (
     <div className="container section">
+      <SEO 
+        title={cert?.studentName ? `Certificate of Completion: ${cert.studentName} | LearnHub` : "Verified Certificate | LearnHub"}
+        description={cert?.courseTitle ? `Verified Certificate of Completion for ${cert.courseTitle} on LearnHub.` : "View this verified Certificate of Completion on LearnHub."}
+        canonical={`/certificates/${id}`}
+      />
       <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ 

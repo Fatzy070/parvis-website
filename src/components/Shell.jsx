@@ -35,8 +35,6 @@ export default function Shell() {
       if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
       else window.scrollTo({ top: 0, behavior: "auto" });
     });
-    const heading = document.querySelector("main h1");
-    if (heading) document.title = `${heading.textContent} · LearnHub`;
     return () => cancelAnimationFrame(frame);
   }, [location.pathname, location.hash]);
   const logout = useMutation({
