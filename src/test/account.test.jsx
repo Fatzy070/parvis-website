@@ -64,7 +64,7 @@ it("account dropdown closes outside and on navigation and uses the existing logo
   fireEvent.click(screen.getByRole("menuitem", { name: "Profile" }));
   expect(await screen.findByText("Profile destination")).toBeVisible();
 });
-it("profile uploads multipart to LearnHub and immediately updates user and comment caches", async () => {
+it("profile uploads multipart to Parvis and immediately updates user and comment caches", async () => {
   const updated = {
     ...user,
     avatarUrl: "https://images.example/avatar.webp",

@@ -42,7 +42,7 @@ export default function CourseDetail() {
     "description": course.description || course.title,
     "provider": {
       "@type": "Organization",
-      "name": course.author || "LearnHub",
+      "name": course.author || "Parvis",
       "sameAs": "https://www.parvis.com.ng"
     }
   };
@@ -50,8 +50,8 @@ export default function CourseDetail() {
   return (
     <div className="container section">
       <SEO 
-        title={`${course.title} | LearnHub`}
-        description={course.description?.substring(0, 160) || "Start learning this course on LearnHub."}
+        title={`${course.title} | Parvis`}
+        description={course.description?.substring(0, 160) || "Start learning this course on Parvis."}
         canonical={`/courses/${id}`}
         ogImage={course.thumbnail}
         structuredData={structuredData}

@@ -1,7 +1,7 @@
 /**
  * OnboardingIllustrations.jsx
  *
- * Product-accurate SVG illustrations for LearnHub onboarding.
+ * Product-accurate SVG illustrations for Parvis onboarding.
  * Inspired by the real Learn page, AI Study Assistant, and Profile/Achievements UI.
  * Uses real CSS variables — adapts to light/dark automatically.
  */

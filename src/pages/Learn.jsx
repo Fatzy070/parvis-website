@@ -44,7 +44,7 @@ export default function Learn() {
   if (!enrollment)
     return (
       <div className="container section">
-        <SEO title={`${course.title} | LearnHub`} noindex />
+        <SEO title={`${course.title} | Parvis`} noindex />
         <EmptyState
           title="Make this course part of your journey"
           to={`/courses/${id}`}
@@ -61,7 +61,7 @@ export default function Learn() {
   if (!lesson)
     return (
       <div className="container section">
-        <SEO title={`${course.title} | LearnHub`} noindex />
+        <SEO title={`${course.title} | Parvis`} noindex />
         <EmptyState
           title="Lesson not found"
           to={`/courses/${id}`}
@@ -84,7 +84,7 @@ export default function Learn() {
   };
   return (
     <div className="learning-container">
-      <SEO title={`${lesson.title} - ${course.title} | LearnHub`} noindex />
+      <SEO title={`${lesson.title} - ${course.title} | Parvis`} noindex />
       <div className="learning-top">
         <Link className="back-link" to="/my-learning">
           <ArrowLeft size={16} />

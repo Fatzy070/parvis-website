@@ -278,7 +278,7 @@ export const useBlogPosts = () => useQuery({ queryKey: keys.blog(), queryFn: ({ 
 export const useBlogPost = (slug) => useQuery({ queryKey: keys.blog(slug), queryFn: ({ signal }) => api(`/blog/posts/${encodeURIComponent(slug)}`, { signal }), enabled: Boolean(slug), staleTime: 5 * 60000 });
 export const useBilling = (enabled = true) => useQuery({ queryKey: keys.billing, queryFn: ({ signal }) => api("/billing", { signal }), staleTime: 30000, enabled });
 export function useCheckout() {
-  return useMutation({ mutationFn: (plan) => api("/billing/checkout", { method: "POST", body: { plan } }), onSuccess: ({ authorizationUrl }) => window.location.assign(authorizationUrl) });
+  return useMutation({ mutationFn: (payload) => api("/billing/checkout", { method: "POST", body: typeof payload === "string" ? { plan: payload } : payload }), onSuccess: ({ authorizationUrl }) => window.location.assign(authorizationUrl) });
 }
 export function useConfirmCheckout(reference) {
   const client = useQueryClient();
