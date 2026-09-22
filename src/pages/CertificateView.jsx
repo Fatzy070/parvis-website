@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Button, PageSkeleton, ErrorState } from "../components/UI";
+import { Button, PageSkeleton, ErrorState, EmptyState } from "../components/UI";
 import { Check, Download, ExternalLink } from "lucide-react";
 import { api } from "../api/client";
 
@@ -13,7 +13,7 @@ export default function CertificateView() {
   useEffect(() => {
     async function fetchCertificate() {
       try {
-        const response = await api(`/my-learning/certificates/${id}/verify`);
+        const response = await api(`/courses/certificates/${id}/verify`);
         setCert(response);
       } catch (err) {
         setError(err);
@@ -27,14 +27,32 @@ export default function CertificateView() {
   if (loading) return <PageSkeleton />;
   
   if (error) {
+    if (error.status === 404) {
+      return (
+        <div className="container section">
+          <EmptyState
+            title="Certificate not found"
+            to="/courses"
+            action="Back to LearnHub"
+          >
+            We couldn't find a certificate with this ID. It may be invalid or has been removed.
+          </EmptyState>
+        </div>
+      );
+    }
+    
     return (
-      <div className="container section">
-        <ErrorState error={error} />
+      <div className="container section" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center', paddingTop: '4rem' }}>
+        <ErrorState
+          error={error}
+          retry={() => window.location.reload()}
+        />
       </div>
     );
   }
 
-  const downloadUrl = `/api/my-learning/certificates/${id}?download=true`;
+  const downloadUrl = `/api/courses/certificates/${id}?download=true`;
+  const viewUrl = `/api/courses/certificates/${id}`;
 
   return (
     <div className="container section">
@@ -85,7 +103,7 @@ export default function CertificateView() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
           <a href={downloadUrl} className="button">
             <Download size={18} />
             Download PDF
@@ -93,6 +111,23 @@ export default function CertificateView() {
           <Link to="/courses" className="button secondary">
             Explore Courses
           </Link>
+        </div>
+
+        <div className="card" style={{ padding: '0', overflow: 'hidden', height: '800px', backgroundColor: '#e5e7eb' }}>
+          <object 
+            data={viewUrl} 
+            type="application/pdf" 
+            width="100%" 
+            height="100%"
+            style={{ display: 'block' }}
+          >
+            <div style={{ padding: '3rem', textAlign: 'center' }}>
+              <p>Your browser does not support inline PDFs.</p>
+              <a href={downloadUrl} className="button" style={{ marginTop: '1rem' }}>
+                Download PDF to View
+              </a>
+            </div>
+          </object>
         </div>
       </div>
     </div>
