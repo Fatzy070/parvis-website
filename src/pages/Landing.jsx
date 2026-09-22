@@ -18,6 +18,7 @@ import { useBilling, useCheckout, useCourses, usePlans, useSession, useSupportRe
 import { Button, CourseCard, EmptyState, ErrorState, FormError, Skeleton } from "../components/UI";
 import { PricingCards } from "../components/BillingUI";
 import Reveal from "../components/Reveal";
+import { SEO } from "../components/SEO";
 
 function SupportForm({ user }) {
   const support = useSupportRequest();
