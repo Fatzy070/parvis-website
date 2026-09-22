@@ -9,6 +9,7 @@ import {
 import Shell from "./components/Shell";
 import Protected from "./components/Protected";
 import { EmptyState, PageSkeleton } from "./components/UI";
+import { Analytics } from "./components/Analytics";
 const Landing = lazy(() => import("./pages/Landing"));
 const Explore = lazy(() => import("./pages/Explore"));
 const CourseDetail = lazy(() => import("./pages/CourseDetail"));
@@ -57,6 +58,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
+        <Analytics />
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             <Route element={<Shell />}>

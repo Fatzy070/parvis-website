@@ -12,6 +12,7 @@ import {
   Progress,
   Button,
 } from "../components/UI";
+import { SEO } from "../components/SEO";
 import SavedLearning from "../components/SavedLearning";
 export default function MyLearning({ tutorials = false }) {
   const learning = useLearning();
@@ -27,6 +28,7 @@ export default function MyLearning({ tutorials = false }) {
   );
   return (
     <div className="container section">
+      <SEO title="My Learning | LearnHub" noindex />
       <PageHeading
         eyebrow={tutorials ? "YOUR LESSON WORKSPACE" : "KEEP YOUR MOMENTUM"}
         title={

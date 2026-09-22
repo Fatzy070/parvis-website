@@ -39,6 +39,27 @@ export default function Landing() {
   const checkout = useCheckout();
   return (
     <>
+      <SEO
+        title="LearnHub — Online Courses, AI Study Tools & Certificates"
+        description="Learn practical tech skills with structured online courses, quizzes, AI-powered study tools, progress tracking and certificates of completion on LearnHub."
+        canonical="/"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              "name": "LearnHub",
+              "url": "https://www.parvis.com.ng/"
+            },
+            {
+              "@type": "Organization",
+              "name": "LearnHub",
+              "url": "https://www.parvis.com.ng/",
+              "logo": "https://www.parvis.com.ng/src/assets/learn.svg"
+            }
+          ]
+        }}
+      />
       <section className="hero container">
         <div className="hero-copy">
           <p className="eyebrow">

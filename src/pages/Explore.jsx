@@ -10,6 +10,8 @@ import {
   EmptyState,
   Button,
 } from "../components/UI";
+import { SEO } from "../components/SEO";
+
 export default function Explore() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") || "";
@@ -23,8 +25,34 @@ export default function Explore() {
         Object.entries({ q, category, ...values }).filter(([, value]) => value),
       ),
     );
+
+  const structuredData = courses.data?.items?.length ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": courses.data.items.map((course, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Course",
+        "url": `https://www.parvis.com.ng/courses/${course.id}`,
+        "name": course.title,
+        "description": course.description || course.title,
+        "provider": {
+          "@type": "Organization",
+          "name": course.provider || course.channelTitle || "LearnHub"
+        }
+      }
+    }))
+  } : null;
+
   return (
     <div className="container section">
+      <SEO 
+        title="Explore Online Courses | LearnHub" 
+        description="Browse our collection of programming and tech courses. Find the perfect subject and take your next step with LearnHub."
+        canonical="/courses"
+        structuredData={structuredData}
+      />
       <PageHeading
         eyebrow="THE COURSE COLLECTION"
         title="Where will curiosity take you?"

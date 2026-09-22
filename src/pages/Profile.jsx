@@ -6,13 +6,23 @@ import { useSession, updateUserCache, useAchievements } from "../queries";
 
 import { api } from "../api/client";
 import Avatar from "../components/Avatar";
-import { Button, FormError, PageHeading } from "../components/UI";
+import { Button, ErrorState, FormError, PageHeading, PageSkeleton } from "../components/UI";
+import { SEO } from "../components/SEO";
 export default function Profile() {
-  const { data: user } = useSession();
+  const { data: user, isPending, isError, error, refetch } = useSession();
   const client = useQueryClient();
-  const [firstName, setFirstName] = useState(user.firstName);
-  const [lastName, setLastName] = useState(user.lastName || "");
-  const [portfolioUrl, setPortfolioUrl] = useState(user.portfolioUrl || "");
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
+  const [portfolioUrl, setPortfolioUrl] = useState(user?.portfolioUrl || "");
+
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+      setPortfolioUrl(user.portfolioUrl || "");
+    }
+  }, [user]);
+
   const save = useMutation({
     mutationFn: () =>
       api("/auth/me", {
@@ -38,6 +48,7 @@ export default function Profile() {
   });
   return (
     <div className="container section profile-page">
+      <SEO title="Profile | LearnHub" noindex />
       <PageHeading eyebrow="YOUR ACCOUNT" title="Make yourself at home.">
         A few details that make LearnHub yours.
       </PageHeading>

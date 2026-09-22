@@ -8,6 +8,7 @@ import { useTheme } from "../components/ThemeProvider";
 import Avatar from "../components/Avatar";
 import Billing from "./Billing";
 import { Button, ErrorState, FormError, PageHeading, PageSkeleton } from "../components/UI";
+import { SEO } from "../components/SEO";
 
 const sections = [
   ["account", "Account", UserRound], ["security", "Security", KeyRound],
@@ -195,5 +196,7 @@ export default function Settings() {
   const { section = "notifications" } = useParams();
   if (!content[section]) return <Navigate to="/settings/account" replace />;
   const Content = content[section];
-  return <div className="container section settings-page"><PageHeading eyebrow="YOUR SPACE" title="Settings">Keep your account comfortable and secure.</PageHeading><div className="settings-layout"><nav className="settings-nav" aria-label="Settings sections">{sections.map(([path, label, Icon]) => <NavLink key={path} to={`/settings/${path}`}><Icon size={18} />{label}</NavLink>)}</nav><div className="settings-content"><Content /></div></div></div>;
+  return <div className="container section settings-page">
+    <SEO title="Settings | LearnHub" noindex />
+    <PageHeading eyebrow="YOUR SPACE" title="Settings">Keep your account comfortable and secure.</PageHeading><div className="settings-layout"><nav className="settings-nav" aria-label="Settings sections">{sections.map(([path, label, Icon]) => <NavLink key={path} to={`/settings/${path}`}><Icon size={18} />{label}</NavLink>)}</nav><div className="settings-content"><Content /></div></div></div>;
 }
