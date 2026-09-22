@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Save } from "lucide-react";
@@ -48,9 +48,9 @@ export default function Profile() {
   });
   return (
     <div className="container section profile-page">
-      <SEO title="Profile | LearnHub" noindex />
+      <SEO title="Profile | Parvis" noindex />
       <PageHeading eyebrow="YOUR ACCOUNT" title="Make yourself at home.">
-        A few details that make LearnHub yours.
+        A few details that make Parvis yours.
       </PageHeading>
       <div className="profile-card">
         <div className="profile-summary">
@@ -182,7 +182,7 @@ function AchievementsSection() {
     <div className="account-note" style={{ marginTop: "24px" }}>
       <h2>Achievements</h2>
       <p className="muted">
-        Monthly recognition awarded by LearnHub for your learning activity, consistency, and performance.
+        Monthly recognition awarded by Parvis for your learning activity, consistency, and performance.
       </p>
 
       {isPending ? (

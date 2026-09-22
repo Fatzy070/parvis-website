@@ -99,7 +99,7 @@ function PreferencesForm({ preferences }) {
   });
   return <form className="settings-card form-stack" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}>
     <h2>Notification preferences</h2>
-    {[["email", "Email notifications", "Course and enrollment updates."], ["inApp", "In-app notifications", "Updates in your LearnHub inbox."]].map(([key, label, description]) => <label className="preference-row" key={key}><span><strong>{label}</strong><span className="muted">{description}</span></span><input type="checkbox" checked={draft[key]} onChange={(event) => { setDraft({ ...draft, [key]: event.target.checked }); save.reset(); }} /></label>)}
+    {[["email", "Email notifications", "Course and enrollment updates."], ["inApp", "In-app notifications", "Updates in your Parvis inbox."]].map(([key, label, description]) => <label className="preference-row" key={key}><span><strong>{label}</strong><span className="muted">{description}</span></span><input type="checkbox" checked={draft[key]} onChange={(event) => { setDraft({ ...draft, [key]: event.target.checked }); save.reset(); }} /></label>)}
     <p className="field-hint">Verification, password reset, welcome, and security emails always remain enabled.</p>
     
     <div className="section-divider" style={{ margin: "24px 0", borderTop: "1px solid var(--border-subtle)" }}></div>
@@ -117,7 +117,7 @@ function PreferencesForm({ preferences }) {
     <div className="section-divider" style={{ margin: "24px 0", borderTop: "1px solid var(--border-subtle)" }}></div>
     <h2>Browser notifications</h2>
     <label className="preference-row">
-      <span><strong>Push notifications</strong><span className="muted">Receive alerts on your device even when LearnHub is closed.</span></span>
+      <span><strong>Push notifications</strong><span className="muted">Receive alerts on your device even when Parvis is closed.</span></span>
       <input type="checkbox" checked={draft.webPush?.enabled || false} onChange={async (event) => { 
         const enabled = event.target.checked;
         setDraft({ ...draft, webPush: { ...draft.webPush, enabled } });
@@ -171,7 +171,7 @@ function NotificationSettings() {
 
 function AppearanceSettings() {
   const { preference, setTheme } = useTheme();
-  return <section className="settings-card"><h2>Appearance</h2><p className="muted">Choose a theme or let LearnHub follow your device.</p>
+  return <section className="settings-card"><h2>Appearance</h2><p className="muted">Choose a theme or let Parvis follow your device.</p>
     <div className="theme-options" role="radiogroup" aria-label="Color theme">
       {[["light", "Light", Sun], ["dark", "Dark", Moon], ["system", "System", Monitor]].map(([value, label, Icon]) => <button key={value} type="button" role="radio" aria-checked={preference === value} className={preference === value ? "selected" : ""} onClick={() => setTheme(value)}><Icon size={22} /><strong>{label}</strong></button>)}
     </div>
@@ -197,6 +197,6 @@ export default function Settings() {
   if (!content[section]) return <Navigate to="/settings/account" replace />;
   const Content = content[section];
   return <div className="container section settings-page">
-    <SEO title="Settings | LearnHub" noindex />
+    <SEO title="Settings | Parvis" noindex />
     <PageHeading eyebrow="YOUR SPACE" title="Settings">Keep your account comfortable and secure.</PageHeading><div className="settings-layout"><nav className="settings-nav" aria-label="Settings sections">{sections.map(([path, label, Icon]) => <NavLink key={path} to={`/settings/${path}`}><Icon size={18} />{label}</NavLink>)}</nav><div className="settings-content"><Content /></div></div></div>;
 }

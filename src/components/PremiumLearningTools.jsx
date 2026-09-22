@@ -90,7 +90,7 @@ function Practice({ courseId, lessonId }) {
     <div className="premium-tool">
       <h3>Personal Practice Quiz</h3>
       <p className="muted">
-        Private AI practice. Results do not affect an official LearnHub grade.
+        Private AI practice. Results do not affect an official Parvis grade.
       </p>
       {!quiz && (
         <div className="generation-controls">
@@ -244,7 +244,7 @@ function Practical({ courseId, lessonId }) {
     <div className="premium-tool">
       <h3>Practical Exercise</h3>
       <p className="muted">
-        Apply the lesson with a hands-on code or text response. LearnHub never
+        Apply the lesson with a hands-on code or text response. Parvis never
         executes submitted code.
       </p>
       {!exercise && (

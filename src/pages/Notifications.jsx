@@ -22,7 +22,7 @@ export default function Notifications() {
   const items = query.data?.pages.flatMap((page) => page.items) || [];
   return (
     <div className="container section profile-page">
-      <SEO title="Notifications | LearnHub" noindex />
+      <SEO title="Notifications | Parvis" noindex />
       <PageHeading eyebrow="YOUR UPDATES" title="Notifications">
         The latest from your learning journey.
       </PageHeading>
