@@ -4,6 +4,7 @@ import { PageHeading } from "../components/UI";
 import Reveal from "../components/Reveal";
 import { useBlogPost, useBlogPosts } from "../queries";
 import { ErrorState, Skeleton } from "../components/UI";
+import { SEO } from "../components/SEO";
 
 const journey = [
   [Compass, "Discover", "Find curated paths through useful public courses."],
@@ -14,6 +15,11 @@ const journey = [
 
 export function About() {
   return <div className="public-info">
+    <SEO 
+      title="About LearnHub | The Learning System"
+      description="LearnHub helps learners turn high-quality tutorials from educators around the web into a structured experience for understanding, practising, and staying consistent."
+      canonical="/about"
+    />
     <section className="container section about-hero"><PageHeading eyebrow="ABOUT LEARNHUB" title="Public learning content, shaped into a learning system">LearnHub helps learners turn high-quality tutorials from educators around the web into a structured experience for understanding, practising, and staying consistent.</PageHeading><div className="actions"><Link className="button" to="/courses">Explore courses <ArrowRight size={17} /></Link><Link className="text-link" to="/#pricing">Compare plans</Link></div></section>
     <Reveal as="section" className="about-band"><div className="container about-split"><div><p className="eyebrow">WHY LEARNHUB EXISTS</p><h2>Watching is only the beginning.</h2></div><div><p>A great tutorial can open a door, but learners still need a way to keep their place, revisit ideas, practise deliberately, and see progress over time.</p><p>LearnHub brings those parts together without claiming ownership of the original videos. Educators create the content; LearnHub provides the workspace around it.</p></div></div></Reveal>
     <Reveal as="section" className="container section"><div className="section-heading"><div><p className="eyebrow">HOW LEARNING WORKS</p><h2>Learn → Understand → Practise → Progress</h2></div></div><div className="about-journey">{journey.map(([Icon, title, text], index) => <article key={title}><span className="step-number">0{index + 1}</span><Icon size={24} /><h3>{title}</h3><p>{text}</p></article>)}</div></Reveal>
@@ -28,11 +34,49 @@ function BlogEmptyState() {
 
 export function Blog() {
   const posts=useBlogPosts();
-  return <div className="container section public-info blog-page"><PageHeading eyebrow="LEARNHUB BLOG" title="Notes for curious, consistent learners">Practical learning guides, platform updates, and thoughtful ways to get more from every lesson.</PageHeading>{posts.isPending?<Skeleton/>:posts.isError?<ErrorState error={posts.error} retry={posts.refetch}/>:posts.data.items.length?<div className="blog-grid">{posts.data.items.map((post)=><article key={post.slug}><p className="eyebrow">{new Date(post.publishedAt).toLocaleDateString()}</p><h2><Link to={`/blog/${post.slug}`}>{post.title}</Link></h2><p>{post.excerpt}</p><Link className="text-link" to={`/blog/${post.slug}`}>Read article <ArrowRight size={16}/></Link></article>)}</div>:<BlogEmptyState/>}</div>;
+  return <div className="container section public-info blog-page">
+    <SEO 
+      title="LearnHub Blog | Learning Guides & Updates"
+      description="Practical learning guides, platform updates, and thoughtful ways to get more from every lesson on LearnHub."
+      canonical="/blog"
+    />
+    <PageHeading eyebrow="LEARNHUB BLOG" title="Notes for curious, consistent learners">Practical learning guides, platform updates, and thoughtful ways to get more from every lesson.</PageHeading>{posts.isPending?<Skeleton/>:posts.isError?<ErrorState error={posts.error} retry={posts.refetch}/>:posts.data.items.length?<div className="blog-grid">{posts.data.items.map((post)=><article key={post.slug}><p className="eyebrow">{new Date(post.publishedAt).toLocaleDateString()}</p><h2><Link to={`/blog/${post.slug}`}>{post.title}</Link></h2><p>{post.excerpt}</p><Link className="text-link" to={`/blog/${post.slug}`}>Read article <ArrowRight size={16}/></Link></article>)}</div>:<BlogEmptyState/>}</div>;
 }
 
 function Markdown({content}) { return <div className="blog-content">{content.split(/\n{2,}/).map((block,index)=>block.startsWith("## ")?<h2 key={index}>{block.slice(3)}</h2>:block.startsWith("# ")?<h2 key={index}>{block.slice(2)}</h2>:<p key={index}>{block}</p>)}</div>; }
-export function BlogPost() { const {slug}=useParams();const query=useBlogPost(slug);if(query.isPending)return <div className="container section"><Skeleton/></div>;if(query.isError)return <div className="container section"><ErrorState error={query.error} retry={query.refetch}/></div>;const post=query.data.post;return <article className="container section blog-article"><Link className="text-link" to="/blog">← Blog</Link><p className="eyebrow">{new Date(post.publishedAt).toLocaleDateString()}</p><h1>{post.title}</h1><p className="blog-lead">{post.excerpt}</p><Markdown content={post.content}/></article>;}
+export function BlogPost() { 
+  const {slug}=useParams();
+  const query=useBlogPost(slug);
+  if(query.isPending)return <div className="container section"><Skeleton/></div>;
+  if(query.isError)return <div className="container section"><ErrorState error={query.error} retry={query.refetch}/></div>;
+  const post=query.data.post;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.excerpt,
+    "datePublished": post.publishedAt,
+    "author": {
+      "@type": "Organization",
+      "name": "LearnHub"
+    }
+  };
+
+  return <article className="container section blog-article">
+    <SEO 
+      title={`${post.title} | LearnHub Blog`}
+      description={post.excerpt}
+      canonical={`/blog/${slug}`}
+      structuredData={structuredData}
+    />
+    <Link className="text-link" to="/blog">← Blog</Link>
+    <p className="eyebrow">{new Date(post.publishedAt).toLocaleDateString()}</p>
+    <h1>{post.title}</h1>
+    <p className="blog-lead">{post.excerpt}</p>
+    <Markdown content={post.content}/>
+  </article>;
+}
 
 const privacyData = [
   { title: "1. Introduction", content: <p>This Privacy Notice describes how LearnHub handles your personal information when you use our platform.</p> },
@@ -97,10 +141,16 @@ import React from 'react';
 export function Legal({ type }) { 
   const isPrivacy = type === "privacy";
   const data = isPrivacy ? privacyData : termsData;
+  const title = isPrivacy ? "Privacy Notice" : "Terms of Use";
 
   return (
     <div className="container section public-info">
-      <PageHeading eyebrow="LEGAL" title={isPrivacy ? "Privacy Notice" : "Terms of Use"}>
+      <SEO 
+        title={`${title} | LearnHub`}
+        description={`Read the LearnHub ${title}.`}
+        canonical={`/${type}`}
+      />
+      <PageHeading eyebrow="LEGAL" title={title}>
         Please read these {isPrivacy ? "privacy practices" : "terms"} carefully.
       </PageHeading>
       

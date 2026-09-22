@@ -10,6 +10,8 @@ import {
   PageHeading,
   PageSkeleton,
 } from "../components/UI";
+import { SEO } from "../components/SEO";
+
 export default function Notifications() {
   const query = useNotifications();
   const client = useQueryClient();
@@ -20,6 +22,7 @@ export default function Notifications() {
   const items = query.data?.pages.flatMap((page) => page.items) || [];
   return (
     <div className="container section profile-page">
+      <SEO title="Notifications | LearnHub" noindex />
       <PageHeading eyebrow="YOUR UPDATES" title="Notifications">
         The latest from your learning journey.
       </PageHeading>

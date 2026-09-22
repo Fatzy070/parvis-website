@@ -16,6 +16,8 @@ import {
   PageSkeleton,
   Progress,
 } from "../components/UI";
+import { SEO } from "../components/SEO";
+
 export default function CourseDetail() {
   const { id } = useParams();
   const courseQuery = useCourse(id);
@@ -32,8 +34,28 @@ export default function CourseDetail() {
     );
   const { course } = courseQuery.data;
   const enrollment = enrollmentQuery.data?.enrollment;
+  
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": course.title,
+    "description": course.description || course.title,
+    "provider": {
+      "@type": "Organization",
+      "name": course.author || "LearnHub",
+      "sameAs": "https://www.parvis.com.ng"
+    }
+  };
+
   return (
     <div className="container section">
+      <SEO 
+        title={`${course.title} | LearnHub`}
+        description={course.description?.substring(0, 160) || "Start learning this course on LearnHub."}
+        canonical={`/courses/${id}`}
+        ogImage={course.thumbnail}
+        structuredData={structuredData}
+      />
       <Link className="back-link" to="/courses">
         <ArrowLeft size={16} />
         Back to courses

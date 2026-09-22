@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /my-learning
+Disallow: /learn/
+Disallow: /settings
+Disallow: /notifications
+Disallow: /profile
+
+Sitemap: https://www.parvis.com.ng/api/sitemap.xml
