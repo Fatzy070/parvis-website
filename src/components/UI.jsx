@@ -151,14 +151,13 @@ export function CourseCard({ course, enrollment }) {
               </span>
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 {enrollment.certificateId && (
-                   <a 
-                     href={`/api/courses/certificates/${enrollment.certificateId}`} 
-                     target="_blank" 
+                   <Link 
+                     to={`/certificates/${enrollment.certificateId}`} 
                      className="text-link" 
                      style={{ fontSize: "0.85em" }}
                    >
                      Certificate
-                   </a>
+                   </Link>
                 )}
                 <Link to={to} aria-label={`Continue ${course.title}`}>
                   {enrollment.completed ? (
