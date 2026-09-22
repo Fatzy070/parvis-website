@@ -53,11 +53,11 @@ export default function Shell() {
       </a>
       <header className="site-header">
         <div className="header-inner">
-          <Link to="/" className="brand" aria-label="LearnHub home">
+          <Link to="/" className="brand" aria-label="Parvis home">
             <span className="brand-mark">
               <BookOpen size={22} />
             </span>
-            learnhub<span className="brand-dot">.</span>
+            parvis<span className="brand-dot">.</span>
           </Link>
           <nav className="desktop-nav" aria-label="Main navigation">
             <NavLink to="/courses">Explore</NavLink>
@@ -141,19 +141,19 @@ export default function Shell() {
         <div className="container footer-inner">
           <div>
             <Link className="brand" to="/">
-              <BookOpen size={20} /> learnhub.
+              <BookOpen size={20} /> parvis.
             </Link>
             <p>Turn great public learning content into structured progress, understanding, and practice.</p>
           </div>
           <div className="footer-links">
-            <nav aria-label="LearnHub"><strong>LearnHub</strong><Link to="/about">About</Link><Link to="/blog">Blog</Link><Link to="/#support">Contact and support</Link></nav>
+            <nav aria-label="Parvis"><strong>Parvis</strong><Link to="/about">About</Link><Link to="/blog">Blog</Link><Link to="/#support">Contact and support</Link></nav>
             <nav aria-label="Learn"><strong>Learn</strong><Link to="/courses">Explore courses</Link>{session.data && <Link to="/my-learning">My learning</Link>}{session.data && <Link to="/tutorials">Tutorials</Link>}</nav>
             <nav aria-label="Product"><strong>Product</strong><Link to="/#pricing">Pricing</Link><Link to={session.data ? "/my-learning" : "/register"}>AI Study Assistant</Link><Link to={session.data ? "/my-learning" : "/register"}>Study Notes</Link></nav>
             {session.data && <nav aria-label="Account"><strong>Account</strong><Link to="/profile">Profile</Link><Link to="/settings">Settings</Link><Link to="/settings/billing">Billing</Link></nav>}
             <nav aria-label="Legal"><strong>Legal</strong><Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link></nav>
           </div>
           <p>
-            © {new Date().getFullYear()} LearnHub
+            © {new Date().getFullYear()} Parvis
             <br />
             <span className="muted">Built for curious minds.</span>
           </p>

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useBilling, useCheckout, useCourses, usePlans, useSession, useSupportRequest } from "../queries";
 import { Button, CourseCard, EmptyState, ErrorState, FormError, Skeleton } from "../components/UI";
-import { PricingCards } from "../components/BillingUI";
+import { PricingCards, PaymentMethodModal } from "../components/BillingUI";
 import Reveal from "../components/Reveal";
 import { SEO } from "../components/SEO";
 
@@ -38,23 +38,25 @@ export default function Landing() {
   const plans = usePlans();
   const billing = useBilling(Boolean(session.data));
   const checkout = useCheckout();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState(null);
   return (
     <>
       <SEO
-        title="LearnHub — Online Courses, AI Study Tools & Certificates"
-        description="Learn practical tech skills with structured online courses, quizzes, AI-powered study tools, progress tracking and certificates of completion on LearnHub."
+        title="Parvis — Online Courses, AI Study Tools & Certificates"
+        description="Learn practical tech skills with structured online courses, quizzes, AI-powered study tools, progress tracking and certificates of completion on Parvis."
         canonical="/"
         structuredData={{
           "@context": "https://schema.org",
           "@graph": [
             {
               "@type": "WebSite",
-              "name": "LearnHub",
+              "name": "Parvis",
               "url": "https://www.parvis.com.ng/"
             },
             {
               "@type": "Organization",
-              "name": "LearnHub",
+              "name": "Parvis",
               "url": "https://www.parvis.com.ng/",
               "logo": "https://www.parvis.com.ng/src/assets/learn.svg"
             }
@@ -229,10 +231,21 @@ export default function Landing() {
         </section>
       </Reveal>
       <Reveal>
-        <section className="container section pricing-section" id="pricing" aria-labelledby="pricing-heading"><div className="section-heading"><div><p className="eyebrow">PRICING</p><h2 id="pricing-heading">Choose the learning capacity that fits your goals.</h2></div><p className="muted section-intro">Public course videos remain free at their source. LearnHub plans provide the system around them: AI-supported understanding, saved study work, structured practice, progress, and active-course capacity.</p></div>{plans.isPending ? <Skeleton /> : plans.isError ? <ErrorState error={plans.error} retry={plans.refetch} /> : <><PricingCards plans={plans.data.items} currentPlan={billing.data?.plan} authenticated={Boolean(session.data)} onSelect={(value) => checkout.mutate(value)} pendingPlan={checkout.isPending ? checkout.variables : null} /><FormError error={checkout.error || billing.error} /></>}</section>
+        <section className="container section pricing-section" id="pricing" aria-labelledby="pricing-heading"><div className="section-heading"><div><p className="eyebrow">PRICING</p><h2 id="pricing-heading">Choose the learning capacity that fits your goals.</h2></div><p className="muted section-intro">Public course videos remain free at their source. Parvis plans provide the system around them: AI-supported understanding, saved study work, structured practice, progress, and active-course capacity.</p></div>{plans.isPending ? <Skeleton /> : plans.isError ? <ErrorState error={plans.error} retry={plans.refetch} /> : <><PricingCards plans={plans.data.items} currentPlan={billing.data?.plan} authenticated={Boolean(session.data)} onSelect={(value) => { setSelectedPlanForCheckout(value); setShowPaymentModal(true); }} pendingPlan={checkout.isPending ? checkout.variables?.plan : null} /><FormError error={checkout.error || billing.error} /></>}</section>
       </Reveal>
+      {showPaymentModal && plans.isSuccess && (
+        <PaymentMethodModal
+          plan={plans.data.items.find(p => p.id === selectedPlanForCheckout)}
+          onClose={() => setShowPaymentModal(false)}
+          onConfirm={(method) => {
+            setShowPaymentModal(false);
+            checkout.mutate({ plan: selectedPlanForCheckout, method });
+          }}
+          pending={checkout.isPending}
+        />
+      )}
       <Reveal>
-        <section className="support-section" id="support"><div className="container section support-grid"><div><p className="eyebrow">WE’RE HERE TO HELP</p><h2>Questions should not stop your progress.</h2><p className="muted">Tell us what happened and include the details that will help us understand it. Your request is saved securely for the LearnHub team.</p></div><SupportForm user={session.data} /></div></section>
+        <section className="support-section" id="support"><div className="container section support-grid"><div><p className="eyebrow">WE’RE HERE TO HELP</p><h2>Questions should not stop your progress.</h2><p className="muted">Tell us what happened and include the details that will help us understand it. Your request is saved securely for the Parvis team.</p></div><SupportForm user={session.data} /></div></section>
       </Reveal>
       <section className="container section">
         <div className="landing-cta">

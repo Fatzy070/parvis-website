@@ -28,7 +28,7 @@ export default function MyLearning({ tutorials = false }) {
   );
   return (
     <div className="container section">
-      <SEO title="My Learning | LearnHub" noindex />
+      <SEO title="My Learning | Parvis" noindex />
       <PageHeading
         eyebrow={tutorials ? "YOUR LESSON WORKSPACE" : "KEEP YOUR MOMENTUM"}
         title={

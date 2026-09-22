@@ -29,7 +29,7 @@ class ErrorBoundary extends Component {
     return { failed: true };
   }
   componentDidCatch(error) {
-    console.error("LearnHub could not render this view:", error.name);
+    console.error("Parvis could not render this view:", error.name);
   }
   render() {
     return this.state.failed ? (

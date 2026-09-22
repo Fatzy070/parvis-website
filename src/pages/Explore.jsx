@@ -39,7 +39,7 @@ export default function Explore() {
         "description": course.description || course.title,
         "provider": {
           "@type": "Organization",
-          "name": course.provider || course.channelTitle || "LearnHub"
+          "name": course.provider || course.channelTitle || "Parvis"
         }
       }
     }))
@@ -48,8 +48,8 @@ export default function Explore() {
   return (
     <div className="container section">
       <SEO 
-        title="Explore Online Courses | LearnHub" 
-        description="Browse our collection of programming and tech courses. Find the perfect subject and take your next step with LearnHub."
+        title="Explore Online Courses | Parvis" 
+        description="Browse our collection of programming and tech courses. Find the perfect subject and take your next step with Parvis."
         canonical="/courses"
         structuredData={structuredData}
       />

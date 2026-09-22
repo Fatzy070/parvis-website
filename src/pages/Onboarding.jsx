@@ -12,7 +12,7 @@ const STEPS = [
   {
     title: "Learn with structure.",
     description:
-      "Every course on LearnHub gives you a clear curriculum with lessons, progress tracking, and a content sidebar so you always know where you are and what comes next.",
+      "Every course on Parvis gives you a clear curriculum with lessons, progress tracking, and a content sidebar so you always know where you are and what comes next.",
     Illustration: StructuredLearningIllustration,
   },
   {
@@ -24,7 +24,7 @@ const STEPS = [
   {
     title: "Keep progressing.",
     description:
-      "Track your course completions, quiz scores, and monthly consistency. LearnHub recognises consistent learners with achievements that appear on your profile.",
+      "Track your course completions, quiz scores, and monthly consistency. Parvis recognises consistent learners with achievements that appear on your profile.",
     Illustration: ProgressIllustration,
   },
 ];

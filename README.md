@@ -1,4 +1,4 @@
-# LearnHub frontend
+# Parvis frontend
 
 React 19, Vite 7, React Router, and TanStack Query. See the workspace [setup guide](../README.md) and [engineering report](../docs/ENGINEERING_REPORT.md).
 

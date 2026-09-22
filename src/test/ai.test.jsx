@@ -66,7 +66,7 @@ it("validates lesson questions and shows API failures without fallback content",
   expect(screen.queryByText("A real provider response.")).toBeNull();
 });
 
-it("generates editable study notes and saves them through LearnHub", async () => {
+it("generates editable study notes and saves them through Parvis", async () => {
   const fetch = vi.fn().mockImplementation(async (path) => ({
     ok: true,
     status: path.endsWith("/ai/notes") ? 201 : 200,

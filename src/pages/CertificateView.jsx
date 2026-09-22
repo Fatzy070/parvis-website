@@ -34,7 +34,7 @@ export default function CertificateView() {
           <EmptyState
             title="Certificate not found"
             to="/courses"
-            action="Back to LearnHub"
+            action="Back to Parvis"
           >
             We couldn't find a certificate with this ID. It may be invalid or has been removed.
           </EmptyState>
@@ -58,8 +58,8 @@ export default function CertificateView() {
   return (
     <div className="container section">
       <SEO 
-        title={cert?.studentName ? `Certificate of Completion: ${cert.studentName} | LearnHub` : "Verified Certificate | LearnHub"}
-        description={cert?.courseTitle ? `Verified Certificate of Completion for ${cert.courseTitle} on LearnHub.` : "View this verified Certificate of Completion on LearnHub."}
+        title={cert?.studentName ? `Certificate of Completion: ${cert.studentName} | Parvis` : "Verified Certificate | Parvis"}
+        description={cert?.courseTitle ? `Verified Certificate of Completion for ${cert.courseTitle} on Parvis.` : "View this verified Certificate of Completion on Parvis."}
         canonical={`/certificates/${id}`}
       />
       <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
@@ -79,7 +79,7 @@ export default function CertificateView() {
           </div>
           <h1>Certificate Verified</h1>
           <p className="text-secondary">
-            This Certificate of Completion is valid and was issued by LearnHub.
+            This Certificate of Completion is valid and was issued by Parvis.
           </p>
         </div>
 
