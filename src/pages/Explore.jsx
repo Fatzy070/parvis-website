@@ -17,8 +17,9 @@ export default function Explore() {
   const q = params.get("q") || "";
   const category = params.get("category") || "";
   const page = Math.max(1, Number(params.get("page")) || 1);
+  const [seed] = useState(() => Math.random().toString(36).substring(7));
   const [input, setInput] = useState(q);
-  const courses = useCourses({ q, category, page });
+  const courses = useCourses({ q, category, page, seed });
   const change = (values) =>
     setParams(
       Object.fromEntries(
