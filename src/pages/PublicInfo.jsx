@@ -34,4 +34,84 @@ export function Blog() {
 function Markdown({content}) { return <div className="blog-content">{content.split(/\n{2,}/).map((block,index)=>block.startsWith("## ")?<h2 key={index}>{block.slice(3)}</h2>:block.startsWith("# ")?<h2 key={index}>{block.slice(2)}</h2>:<p key={index}>{block}</p>)}</div>; }
 export function BlogPost() { const {slug}=useParams();const query=useBlogPost(slug);if(query.isPending)return <div className="container section"><Skeleton/></div>;if(query.isError)return <div className="container section"><ErrorState error={query.error} retry={query.refetch}/></div>;const post=query.data.post;return <article className="container section blog-article"><Link className="text-link" to="/blog">← Blog</Link><p className="eyebrow">{new Date(post.publishedAt).toLocaleDateString()}</p><h1>{post.title}</h1><p className="blog-lead">{post.excerpt}</p><Markdown content={post.content}/></article>;}
 
-export function Legal({ type }) { const privacy = type === "privacy"; return <div className="container section public-info legal-copy"><PageHeading eyebrow="LEGAL" title={privacy ? "Privacy notice" : "Terms of use"}>This page is a product placeholder and requires final review by qualified legal counsel before LearnHub’s commercial launch.</PageHeading><h2>{privacy ? "What the product handles" : "Current product terms"}</h2><p>{privacy ? "LearnHub stores account, learning-progress, saved-work, notification, security-session, and billing records needed to operate the service. Payment credentials are handled by Paystack; LearnHub does not collect full card numbers, PINs, OTPs, or CVVs." : "Learners must use LearnHub lawfully and keep their accounts secure. Course videos remain subject to their original publishers’ terms. AI output can be incomplete and should be reviewed rather than treated as professional advice."}</p><p>Contact LearnHub through the support form for product questions. Final retention periods, governing law, processor details, and statutory disclosures remain subject to legal review.</p></div>; }
+const privacyData = [
+  { title: "1. Introduction", content: <p>This Privacy Notice describes how LearnHub handles your personal information when you use our platform.</p> },
+  { title: "2. Information We Collect", content: (
+    <>
+      <p>We collect information necessary to provide and operate the LearnHub platform, including:</p>
+      <ul>
+        <li><strong>Account Information:</strong> Name, email address, and profile/avatar information.</li>
+        <li><strong>Learning Data:</strong> Course enrollments, lesson progress, completed lessons, quiz responses, practical activity, learning history, and achievements/recognition.</li>
+        <li><strong>Technical Data:</strong> Authentication and session information, device and security information, email-delivery metadata, and Web Push subscription information.</li>
+        <li><strong>Support and Preferences:</strong> Subscription and access information, support requests, and notification preferences.</li>
+        <li><strong>Billing Metadata:</strong> Billing and payment metadata.</li>
+      </ul>
+      <p>Please note that payment card credentials are processed securely through Paystack. LearnHub does not intentionally store full card numbers, CVVs, PINs, or banking authentication credentials.</p>
+    </>
+  )},
+  { title: "3. How We Use Information", content: (
+    <>
+      <p>We use the collected information for the following purposes:</p>
+      <ul>
+        <li>Providing accounts, authentication, and platform security.</li>
+        <li>Delivering courses, saving your progress, and managing subscriptions and access.</li>
+        <li>Facilitating quizzes, practicals, certificates, and achievements/recognition.</li>
+        <li>Powering our AI study functionality.</li>
+        <li>Providing customer support.</li>
+        <li>Sending transactional emails, optional learning reminders, and Web Push notifications.</li>
+        <li>Improving the LearnHub platform.</li>
+      </ul>
+    </>
+  )},
+  { title: "4. AI Features", content: <p>LearnHub uses AI services for functionality such as study assistance, summaries, quiz generation, and practical feedback. Only relevant learning context is sent to these services where necessary. Please be aware that AI output is not always accurate and should be used as a learning aid.</p> },
+  { title: "5. Payments", content: <p>Payments for LearnHub subscriptions are handled through Paystack where applicable. While LearnHub may store transaction and subscription metadata required to manage your access, your payment credentials are handled directly by the payment provider.</p> },
+  { title: "6. Notifications and Communications", content: <p>LearnHub may send various communications, including verification emails, password-reset emails, security alerts, completion emails, certificate emails, optional study reminders, engagement emails, campaigns where applicable, and Web Push notifications. You can control optional communications and reminders through your notification settings where supported. Transactional and security messages may still be sent where necessary.</p> },
+  { title: "7. User Controls", content: <p>You can manage your profile information, password and security, sessions and devices (where supported), notification preferences, Web Push settings, and subscription/billing settings directly within LearnHub. Account-related requests can also be made through support.</p> },
+  { title: "8. Data Rights and Requests", content: <p>You may contact LearnHub regarding accessing, correcting, or requesting deletion or closure of your account and information, or if you have any questions about privacy.</p> },
+  { title: "9. Contact", content: <p>For any questions or concerns regarding this Privacy Notice, please contact LearnHub through our support form.</p> },
+];
+
+const termsData = [
+  { title: "1. Acceptance of Terms", content: <p>By using LearnHub, you agree to these Terms of Use and our Privacy Notice.</p> },
+  { title: "2. Accounts", content: <p>You are responsible for providing accurate account information, protecting your credentials, and all activity that occurs under your account. You must not share or abuse accounts in ways prohibited by the platform.</p> },
+  { title: "3. Learning Content", content: <p>LearnHub organizes learning content, which may include public or third-party content such as YouTube playlists where applicable. Original publishers retain all rights to their content, and LearnHub does not claim ownership over third-party course videos. Content availability may change if the original source modifies or removes their content.</p> },
+  { title: "4. AI Features", content: <p>LearnHub provides AI-generated explanations, summaries, quizzes, study notes, and practical feedback. This AI output may contain errors. You should treat AI output as learning assistance rather than guaranteed professional advice.</p> },
+  { title: "5. Quizzes and Assessments", content: <p>LearnHub provides various types of assessments, including AI Practice Quizzes and official LearnHub quizzes. Practice quizzes are study tools and do not necessarily represent official grades.</p> },
+  { title: "6. Course Progress", content: <p>LearnHub tracks your progress and completion based on your platform activity. We do not guarantee that completing a LearnHub course is equivalent to formal education or accreditation.</p> },
+  { title: "7. Certificates of Completion", content: <p>LearnHub certificates confirm your completion of learning activities and course requirements on the LearnHub platform. They do NOT represent university accreditation, government licensing, professional certification, or guaranteed employment qualification, unless LearnHub explicitly states otherwise for a particular course in the future.</p> },
+  { title: "8. Subscriptions and Payments", content: <p>LearnHub offers various plans, such as Free, Growth, and Pro where appropriate. Paid subscriptions are processed securely using Paystack. Any cancellation or access behavior operates according to the implementation on the platform at the time of subscription.</p> },
+  { title: "9. Promotional Plan Grants", content: <p>LearnHub may occasionally provide promotional paid-plan access. Such grants may expire, do not imply payment by the user, and do not automatically renew unless explicitly stated.</p> },
+  { title: "10. Acceptable Use", content: <p>You must use LearnHub responsibly. You must not abuse LearnHub, attempt unauthorized access, interfere with platform operations, exploit APIs or security controls, impersonate others, use LearnHub unlawfully, upload malicious content, or attempt to misuse paid or AI features.</p> },
+  { title: "11. Intellectual Property", content: <p>LearnHub branding, original UI, platform code, original LearnHub-created content, and related assets belong to LearnHub or their respective owners. Third-party course content remains owned by its original publisher.</p> },
+  { title: "12. Third-Party Services", content: <p>Some LearnHub features rely on third parties such as YouTube, Paystack, AI providers, and email/cloud services. LearnHub cannot guarantee uninterrupted availability of these third-party services.</p> },
+  { title: "13. Service Availability", content: <p>LearnHub aims to provide reliable service but cannot guarantee uninterrupted or error-free availability. Features and content may change as the product evolves.</p> },
+  { title: "14. Suspension and Termination", content: <p>LearnHub may restrict or suspend accounts for abuse, security threats, fraudulent activity, or serious violations of these Terms.</p> },
+  { title: "15. Disclaimers", content: <p>LearnHub provides learning tools and content on an "as available" basis. We do not guarantee employment, income, exam results, career outcomes, or professional accreditation.</p> },
+  { title: "16. Limitation of Liability", content: <p>To the maximum extent permitted by law, LearnHub shall not be liable for indirect, incidental, special, or consequential damages arising out of or in connection with your use of the platform.</p> },
+  { title: "17. Changes to the Terms", content: <p>LearnHub may update these Terms of Use and will update the "Last updated" date accordingly.</p> },
+  { title: "18. Contact", content: <p>If you have any questions about these Terms, please contact LearnHub through our support form.</p> },
+];
+
+import React from 'react';
+
+export function Legal({ type }) { 
+  const isPrivacy = type === "privacy";
+  const data = isPrivacy ? privacyData : termsData;
+
+  return (
+    <div className="container section public-info">
+      <PageHeading eyebrow="LEGAL" title={isPrivacy ? "Privacy Notice" : "Terms of Use"}>
+        Please read these {isPrivacy ? "privacy practices" : "terms"} carefully.
+      </PageHeading>
+      
+      <div className="legal-content">
+        {data.map((section, index) => (
+          <React.Fragment key={index}>
+            <h2>{section.title}</h2>
+            {section.content}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
