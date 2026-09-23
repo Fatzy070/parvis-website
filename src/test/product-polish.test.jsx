@@ -121,6 +121,7 @@ it("opens a support conversation from a notification deep link and persists a re
   });
   vi.stubGlobal("fetch", fetch);
   mount(<Routes><Route path="/settings/:section?" element={<Settings />} /></Routes>, `/settings/support?ticket=${id}`);
+  expect(await screen.findByRole("dialog", { name: /Ticket details|Billing question/ })).toBeVisible();
   expect(await screen.findByText("Parvis Support")).toBeVisible();
   fireEvent.change(screen.getByLabelText("Reply"), { target: { value: "Thank you for checking." } });
   fireEvent.click(screen.getByRole("button", { name: "Send Reply" }));
