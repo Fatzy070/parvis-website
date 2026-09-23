@@ -52,7 +52,7 @@ export default function Notifications() {
               <p>{item.body}</p>
               <div className="row-between">
                 <Link className="text-link" to={item.href}>
-                  View course
+                  View details
                 </Link>
                 {!item.readAt && (
                   <Button

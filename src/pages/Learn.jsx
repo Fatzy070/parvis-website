@@ -180,14 +180,8 @@ export default function Learn() {
                 {lesson.description ||
                   "No description was provided for this lesson."}
               </p>
-              {/* <a
-                className="text-link"
-                href={`https://www.youtube.com/watch?v=${lesson.videoId}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Watch on YouTube <ArrowRight size={16} />
-              </a> */}
+             
+            
             </section>
           )}
           {tab === "discussion" && (

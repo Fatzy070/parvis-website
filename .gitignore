@@ -36,3 +36,4 @@ playwright/.cache/
 blob-report/
 cypress/screenshots/
 cypress/videos/
+test*

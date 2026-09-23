@@ -274,12 +274,11 @@ export default function Auth({ mode }) {
           YOUR LEARNING JOURNEY, ALL TOGETHER.
         </span>
       </aside>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.section
           key={mode}
           className="auth-form-panel"
           variants={authStepVariants}
-          initial="enter"
           animate="center"
           exit="exit"
           transition={authStepTransition}

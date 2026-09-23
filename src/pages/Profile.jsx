@@ -6,10 +6,10 @@ import { useSession, updateUserCache, useAchievements } from "../queries";
 
 import { api } from "../api/client";
 import Avatar from "../components/Avatar";
-import { Button, ErrorState, FormError, PageHeading, PageSkeleton } from "../components/UI";
+import { Button, FormError, PageHeading } from "../components/UI";
 import { SEO } from "../components/SEO";
 export default function Profile() {
-  const { data: user, isPending, isError, error, refetch } = useSession();
+  const { data: user } = useSession();
   const client = useQueryClient();
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
