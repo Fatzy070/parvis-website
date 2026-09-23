@@ -91,3 +91,38 @@ it("submits the public support form and never fakes a failed request", async () 
   expect(await screen.findByText("Message received.")).toBeVisible();
   expect(fetch.mock.calls.some(([path, options]) => path.endsWith("/api/support") && options.method === "POST")).toBe(true);
 });
+
+it("creates and lists authenticated support tickets from Settings", async () => {
+  let created = false;
+  const fetch = vi.fn().mockImplementation(async (path, options = {}) => {
+    if (path.endsWith("/support/me") && options.method === "GET") return ok({ items: created ? [{ id: "507f1f77bcf86cd799439011", subject: "Certificate missing", category: "quiz_certificate", status: "open", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }] : [], nextCursor: null });
+    if (path.endsWith("/support") && options.method === "POST") { created = true; return { ok: true, status: 201, json: async () => ({ data: { requestId: "507f1f77bcf86cd799439011", message: "received" } }) }; }
+    return ok({});
+  });
+  vi.stubGlobal("fetch", fetch);
+  mount(<Routes><Route path="/settings/:section?" element={<Settings />} /></Routes>, "/settings/support");
+  expect(await screen.findByText("No support tickets yet")).toBeVisible();
+  fireEvent.click(screen.getAllByRole("button", { name: "Create Ticket" })[0]);
+  fireEvent.change(screen.getByLabelText("Subject"), { target: { value: "Certificate missing" } });
+  fireEvent.change(screen.getByLabelText("Category"), { target: { value: "quiz_certificate" } });
+  fireEvent.change(screen.getByLabelText("Message"), { target: { value: "I completed the course but cannot find it." } });
+  fireEvent.click(screen.getByRole("button", { name: "Submit Ticket" }));
+  expect(await screen.findByText("Certificate missing")).toBeVisible();
+  expect(fetch.mock.calls.some(([path, options]) => path.endsWith("/api/support") && options.method === "POST")).toBe(true);
+});
+
+it("opens a support conversation from a notification deep link and persists a reply", async () => {
+  const id = "507f1f77bcf86cd799439011";
+  const fetch = vi.fn().mockImplementation(async (path, options = {}) => {
+    if (path.endsWith(`/support/me/${id}/reply`) && options.method === "POST") return ok({ message: "Reply sent." });
+    if (path.endsWith(`/support/me/${id}`)) return ok({ request: { id, subject: "Billing question", category: "billing_subscription", status: "in_progress", message: "Please clarify my plan.", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), responses: [{ id: "r1", body: "We are checking it.", senderType: "ADMIN", sentAt: new Date().toISOString() }] } });
+    if (path.includes("/support/me")) return ok({ items: [], nextCursor: null });
+    return ok({});
+  });
+  vi.stubGlobal("fetch", fetch);
+  mount(<Routes><Route path="/settings/:section?" element={<Settings />} /></Routes>, `/settings/support?ticket=${id}`);
+  expect(await screen.findByText("Parvis Support")).toBeVisible();
+  fireEvent.change(screen.getByLabelText("Reply"), { target: { value: "Thank you for checking." } });
+  fireEvent.click(screen.getByRole("button", { name: "Send Reply" }));
+  await waitFor(() => expect(fetch.mock.calls.some(([path, options]) => path.endsWith(`/support/me/${id}/reply`) && options.method === "POST")).toBe(true));
+});

@@ -93,9 +93,10 @@ it("profile uploads multipart to Parvis and immediately updates user and comment
   expect(
     await screen.findByText("Your profile picture has been updated."),
   ).toBeVisible();
-  expect(fetch.mock.calls[0][0]).toMatch(/\/api\/auth\/me\/avatar$/);
-  expect(fetch.mock.calls[0][1].body).toBeInstanceOf(FormData);
-  expect(fetch.mock.calls[0][1].headers["Content-Type"]).toBeUndefined();
+  const avatarCall = fetch.mock.calls.find(([path]) => /\/api\/auth\/me\/avatar$/.test(path));
+  expect(avatarCall).toBeDefined();
+  expect(avatarCall[1].body).toBeInstanceOf(FormData);
+  expect(avatarCall[1].headers["Content-Type"]).toBeUndefined();
   expect(client.getQueryData(keys.session).avatarUrl).toBe(updated.avatarUrl);
   expect(
     client.getQueryData(keys.comments("course")).pages[0].items[0].author.image,
@@ -113,7 +114,7 @@ it("profile blocks unsupported files and shows useful upload failure", async () 
   expect(await screen.findByRole("alert")).toHaveTextContent(
     "PNG, JPEG, or WebP",
   );
-  expect(fetch).not.toHaveBeenCalled();
+  expect(fetch.mock.calls.some(([path]) => /\/api\/auth\/me\/avatar$/.test(path))).toBe(false);
 });
 it("settings reads server preferences, saves switches, and reports success", async () => {
   const fetch = vi.fn().mockImplementation(async (_path, options) =>

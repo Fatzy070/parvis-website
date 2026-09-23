@@ -10,6 +10,7 @@ import {
 export function Button({
   children,
   pending,
+  pendingText,
   className = "",
   disabled,
   ...props
@@ -23,7 +24,7 @@ export function Button({
       {pending && (
         <LoaderCircle size={17} className="spin" aria-hidden="true" />
       )}
-      {children}
+      {pending && pendingText ? pendingText : children}
     </button>
   );
 }
