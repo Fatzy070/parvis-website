@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, NavLink, Navigate, useParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, CreditCard, KeyRound, Laptop, Monitor, Moon, Sun, UserRound } from "lucide-react";
+import { Bell, CreditCard, KeyRound, Laptop, LifeBuoy, Monitor, Moon, Sun, UserRound } from "lucide-react";
 import { keys, useChangePassword, usePreferences, useRevokeSessions, useSession, useSessions } from "../queries";
 import { api } from "../api/client";
 import { useTheme } from "../components/ThemeProvider";
 import Avatar from "../components/Avatar";
 import Billing from "./Billing";
+import SettingsSupport from "./SettingsSupport";
 import { Button, ErrorState, FormError, PageHeading, PageSkeleton } from "../components/UI";
 import { SEO } from "../components/SEO";
 
@@ -15,6 +16,7 @@ const sections = [
   ["notifications", "Notifications", Bell], ["appearance", "Appearance", Sun],
   ["devices", "Devices & sessions", Laptop],
   ["billing", "Billing", CreditCard],
+  ["support", "Support", LifeBuoy]
 ];
 
 function AccountSettings() {
@@ -87,6 +89,8 @@ function ReminderTimeSelector({ value, onChange }) {
 function PreferencesForm({ preferences }) {
   const client = useQueryClient();
   const [draft, setDraft] = useState(preferences);
+  const [pushError, setPushError] = useState("");
+  const [pushBusy, setPushBusy] = useState(false);
   const save = useMutation({ 
     mutationFn: () => {
       const payload = { ...draft };
@@ -118,8 +122,10 @@ function PreferencesForm({ preferences }) {
     <h2>Browser notifications</h2>
     <label className="preference-row">
       <span><strong>Push notifications</strong><span className="muted">Receive alerts on your device even when Parvis is closed.</span></span>
-      <input type="checkbox" checked={draft.webPush?.enabled || false} onChange={async (event) => { 
+      <input type="checkbox" aria-describedby="push-status" disabled={pushBusy} checked={draft.webPush?.enabled || false} onChange={async (event) => { 
         const enabled = event.target.checked;
+        setPushError("");
+        setPushBusy(true);
         setDraft({ ...draft, webPush: { ...draft.webPush, enabled } });
         save.reset();
         
@@ -128,11 +134,11 @@ function PreferencesForm({ preferences }) {
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
               const registration = await navigator.serviceWorker.ready;
-              const { data: { publicKey } } = await api("/auth/web-push/vapid", { method: "GET" });
+              const { publicKey } = await api("/auth/web-push/vapid");
               
               const base64ToUint8Array = (base64) => {
                 const padding = '='.repeat((4 - base64.length % 4) % 4);
-                const b64 = (base64 + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
                 const rawData = window.atob(b64);
                 return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
               };
@@ -142,18 +148,31 @@ function PreferencesForm({ preferences }) {
                 applicationServerKey: base64ToUint8Array(publicKey)
               });
               await api("/auth/web-push/subscribe", { method: "POST", body: subscription.toJSON() });
-            } else {
-              setDraft({ ...draft, webPush: { ...draft.webPush, enabled: false } });
-            }
+            } else throw new Error("Browser notification permission was not granted.");
           } catch (err) {
-            console.error("Push notification setup failed:", err);
+            setPushError(err.message || "Browser notifications could not be enabled.");
             setDraft({ ...draft, webPush: { ...draft.webPush, enabled: false } });
           }
         } else if (!enabled) {
-          await api("/auth/web-push/toggle", { method: "POST", body: { enabled: false } });
+          try {
+            const registration = await navigator.serviceWorker?.ready;
+            const subscription = await registration?.pushManager?.getSubscription();
+            if (subscription) {
+              await api("/auth/web-push/unsubscribe", { method: "POST", body: { endpoint: subscription.endpoint } });
+              await subscription.unsubscribe();
+            }
+            await api("/auth/web-push/toggle", { method: "POST", body: { enabled: false } });
+          } catch (err) {
+            setPushError(err.message || "Browser notifications could not be disabled.");
+          }
+        } else {
+          setPushError("This browser does not support push notifications.");
+          setDraft({ ...draft, webPush: { ...draft.webPush, enabled: false } });
         }
+        setPushBusy(false);
       }} />
     </label>
+    <p id="push-status" className={pushError ? "form-error" : "field-hint"} role={pushError ? "alert" : undefined}>{pushError || (pushBusy ? "Updating browser notifications…" : "Each browser can be enabled separately.")}</p>
 
 
     <FormError error={save.error} />
@@ -191,7 +210,7 @@ function DevicesSettings() {
   </section>;
 }
 
-const content = { account: AccountSettings, security: SecuritySettings, notifications: NotificationSettings, appearance: AppearanceSettings, devices: DevicesSettings, billing: Billing };
+const content = { account: AccountSettings, security: SecuritySettings, notifications: NotificationSettings, appearance: AppearanceSettings, devices: DevicesSettings, billing: Billing, support: SettingsSupport };
 export default function Settings() {
   const { section = "notifications" } = useParams();
   if (!content[section]) return <Navigate to="/settings/account" replace />;

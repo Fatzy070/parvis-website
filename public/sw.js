@@ -15,7 +15,7 @@ self.addEventListener("notificationclick", function (event) {
   event.notification.close();
   if (event.notification.data) {
     event.waitUntil(
-      clients.openWindow(event.notification.data)
+      self.clients.openWindow(event.notification.data)
     );
   }
 });
