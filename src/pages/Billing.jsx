@@ -86,7 +86,7 @@ export default function Billing() {
     </section>
     
     <FormError error={checkout.error || cancel.error || manage.error} />
-    <section><h2>Your usage</h2><div className="usage-grid"><UsageMeter label="Active courses" {...billing.activeCourses} />{Object.entries(billing.usage).map(([key, value]) => <UsageMeter key={key} label={labels[key] || key} {...value} />)}</div><p className="field-hint">Provider-backed AI actions count during your current usage period. Cached results do not reduce your allowance.</p></section>
+    <section><h2>Your usage</h2><div className="usage-grid"><UsageMeter label="Active courses" {...billing.activeCourses} />{Object.entries(billing.usage).map(([key, value]) => <UsageMeter key={key} label={labels[key] || key} {...value} />)}</div><p className="field-hint">AI study allowances count when you first access new AI study content during your current usage period. Reopening the same content does not use another allowance.</p></section>
     <section><PageHeading eyebrow="CHOOSE YOUR PACE" title="Plans built around the learning work">You are paying for structure, AI understanding, notes, practice, feedback, and learning capacity—not access to public videos.</PageHeading><PricingCards plans={plans.data.items} currentPlan={billing.plan} authenticated onSelect={(value) => { setSelectedPlanForCheckout(value); setShowPaymentModal(true); }} pendingPlan={checkout.isPending ? checkout.variables?.plan : null} /></section>
     
     {showPaymentModal && <PaymentMethodModal
