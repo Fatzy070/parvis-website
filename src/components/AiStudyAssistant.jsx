@@ -97,7 +97,6 @@ export default function AiStudyAssistant({ courseId, lessonId }) {
                 ? "Lesson answer"
                 : modes.find(([mode]) => mode === result.mode)?.[1]}
             </strong>
-            {result.cached && <span>Saved result</span>}
           </div>
           <div className="ai-content">{result.content}</div>
         </article>
