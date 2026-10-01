@@ -7,7 +7,9 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Moon, Sun, Menu, X, ArrowUpRight } from "lucide-react";
+import { Moon, Sun, Menu, X, ArrowUpRight } from "lucide-react";
+
+import ParvisLogo from "./ParvisLogo";
 import { api } from "../api/client";
 import { useSession, keys } from "../queries";
 import { FormError } from "./UI";
@@ -54,10 +56,7 @@ export default function Shell() {
       <header className="site-header">
         <div className="header-inner">
           <Link to="/" className="brand" aria-label="Parvis home">
-            <span className="brand-mark">
-              <BookOpen size={22} />
-            </span>
-            parvis<span className="brand-dot">.</span>
+            <ParvisLogo style={{ height: "35px", width: "auto" }} />
           </Link>
           <nav className="desktop-nav" aria-label="Main navigation">
             <NavLink to="/courses">Explore</NavLink>
@@ -112,9 +111,9 @@ export default function Shell() {
                 session.data ? "Your profile" : "Sign in",
               ],
             ].map(([to, title]) => (
-              <NavLink key={to} to={to} onClick={() => setMenu(false)}>
+              <Navparvis.Link key={to} to={to} onClick={() => setMenu(false)}>
                 {title}
-              </NavLink>
+              </Navparvis.Link>
             ))}
             {session.data && (
               <button
@@ -141,7 +140,7 @@ export default function Shell() {
         <div className="container footer-inner">
           <div>
             <Link className="brand" to="/">
-              <BookOpen size={20} /> parvis.
+              <ParvisLogo style={{ height: "24px", width: "auto" }} />
             </Link>
             <p>Turn great public learning content into structured progress, understanding, and practice.</p>
           </div>
