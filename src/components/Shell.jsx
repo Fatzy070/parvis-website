@@ -111,9 +111,9 @@ export default function Shell() {
                 session.data ? "Your profile" : "Sign in",
               ],
             ].map(([to, title]) => (
-              <Navparvis.Link key={to} to={to} onClick={() => setMenu(false)}>
+              <NavLink key={to} to={to} onClick={() => setMenu(false)}>
                 {title}
-              </Navparvis.Link>
+              </NavLink>
             ))}
             {session.data && (
               <button
