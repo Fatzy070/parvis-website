@@ -37,3 +37,4 @@ blob-report/
 cypress/screenshots/
 cypress/videos/
 test*
+playwright.config.js
