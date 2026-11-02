@@ -18,6 +18,14 @@ export const keys = {
   comments: (id, lessonId) => ["comments", id, lessonId || "course"],
   quiz: (id, lessonId) => ["quiz", id, lessonId || "course"],
   aiSummary: (id, lessonId, mode) => ["ai-summary", id, lessonId, mode],
+  summaryAudio: (id, lessonId, mode) => [
+    "summary-audio",
+    id,
+    lessonId,
+    mode,
+  ],
+  noteAudio: (noteId) => ["note-audio", noteId],
+  lessonNoteAudio: (id, lessonId) => ["lesson-note-audio", id, lessonId],
   studyNotes: ["study-notes"],
   practiceQuizzes: ["practice-quizzes"],
   practicals: ["practicals"],
@@ -290,4 +298,94 @@ export function useCancelSubscription() {
 }
 export const useBillingManagement = () => useMutation({ mutationFn: () => api("/billing/management", { method: "POST" }), onSuccess: ({ url }) => window.location.assign(url) });
 export const useAchievements = () => useQuery({ queryKey: keys.achievements, queryFn: ({ signal }) => api("/auth/me/achievements", { signal }), staleTime: 60 * 1000 });
+
+export function useSummaryAudio(courseId, lessonId) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (mode) =>
+      api(`/ai/courses/${courseId}/lessons/${lessonId}/summary-audio`, {
+        method: "POST",
+        body: { mode },
+      }),
+    onSuccess: (res, mode) => {
+      client.setQueryData(
+        keys.summaryAudio(courseId, lessonId, mode),
+        res,
+      );
+    },
+  });
+}
+
+export function useSummaryAudioStatus(courseId, lessonId, mode, enabled = true) {
+  return useQuery({
+    queryKey: keys.summaryAudio(courseId, lessonId, mode),
+    queryFn: ({ signal }) =>
+      api(
+        `/ai/courses/${courseId}/lessons/${lessonId}/summary-audio?mode=${encodeURIComponent(mode)}`,
+        { signal },
+      ),
+    enabled: Boolean(courseId && lessonId && mode && enabled),
+    staleTime: 5 * 60000,
+  });
+}
+
+export function useStudyNoteAudio() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (noteId) =>
+      api(`/ai/notes/${noteId}/audio`, {
+        method: "POST",
+      }),
+    onSuccess: (res, noteId) => {
+      client.setQueryData(keys.noteAudio(noteId), res);
+    },
+  });
+}
+
+export function useStudyNoteAudioStatus(noteId, enabled = true) {
+  return useQuery({
+    queryKey: keys.noteAudio(noteId),
+    queryFn: ({ signal }) => api(`/ai/notes/${noteId}/audio`, { signal }),
+    enabled: Boolean(noteId && enabled),
+    staleTime: 5 * 60000,
+  });
+}
+
+export function useLessonStudyNotesAudio(courseId, lessonId) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      api(`/ai/courses/${courseId}/lessons/${lessonId}/study-notes-audio`, {
+        method: "POST",
+      }),
+    onSuccess: (res) => {
+      client.setQueryData(
+        keys.lessonNoteAudio(courseId, lessonId),
+        res,
+      );
+    },
+  });
+}
+
+export function useLessonStudyNotesAudioStatus(courseId, lessonId, enabled = true) {
+  return useQuery({
+    queryKey: keys.lessonNoteAudio(courseId, lessonId),
+    queryFn: ({ signal }) =>
+      api(`/ai/courses/${courseId}/lessons/${lessonId}/study-notes-audio`, {
+        signal,
+      }),
+    enabled: Boolean(courseId && lessonId && enabled),
+    staleTime: 5 * 60000,
+  });
+}
+
+export function useRetryAudio() {
+  return useMutation({
+    mutationFn: (audioId) =>
+      api(`/ai/audio/${audioId}/retry`, {
+        method: "POST",
+      }),
+  });
+}
+
 

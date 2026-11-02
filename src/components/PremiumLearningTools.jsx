@@ -14,14 +14,32 @@ import {
   usePracticeAttempt,
   usePracticalAttempt,
   useSaveStudyNote,
+  useLessonStudyNotesAudio,
+  useLessonStudyNotesAudioStatus,
+  useRetryAudio,
 } from "../queries";
 import { Button, FormError } from "./UI";
+import ListenLearnPlayer from "./ListenLearnPlayer";
 
 function Notes({ courseId, lessonId }) {
   const generate = useGenerateStudyNotes(courseId, lessonId);
   const save = useSaveStudyNote();
   const [draft, setDraft] = useState(null);
   const create = () => generate.mutate(undefined, { onSuccess: setDraft });
+
+  const lessonNoteAudio = useLessonStudyNotesAudio(courseId, lessonId);
+  const lessonAudioStatus = useLessonStudyNotesAudioStatus(
+    courseId,
+    lessonId,
+    save.isSuccess,
+  );
+  const retryAudio = useRetryAudio();
+  const audioData =
+    lessonAudioStatus.data?.data ||
+    lessonAudioStatus.data ||
+    lessonNoteAudio.data?.data ||
+    lessonNoteAudio.data;
+
   return (
     <div className="premium-tool">
       <h3>AI Study Notes</h3>
@@ -69,9 +87,26 @@ function Notes({ courseId, lessonId }) {
             />
           </label>
           {save.isSuccess && (
-            <p className="notice" role="status">
-              Study note saved.
-            </p>
+            <div className="note-saved-feedback">
+              <p className="notice" role="status">
+                Study note saved.
+              </p>
+              <ListenLearnPlayer
+                audio={audioData}
+                onRequestAudio={() => lessonNoteAudio.mutate()}
+                isRequesting={lessonNoteAudio.isPending}
+                onRetry={() => {
+                  if (audioData?.id) {
+                    retryAudio.mutate(audioData.id, {
+                      onSuccess: () => lessonAudioStatus.refetch(),
+                    });
+                  } else {
+                    lessonNoteAudio.mutate();
+                  }
+                }}
+                label="Listen to your saved note"
+              />
+            </div>
           )}
           <Button pending={save.isPending}>Save to My Learning</Button>
         </form>

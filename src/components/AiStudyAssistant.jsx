@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { Sparkles, Send } from "lucide-react";
-import { useAiExplain, useAiSummary } from "../queries";
+import {
+  useAiExplain,
+  useAiSummary,
+  useSummaryAudio,
+  useRetryAudio,
+} from "../queries";
 import { Button, FormError } from "./UI";
 import PremiumLearningTools from "./PremiumLearningTools";
+import ListenLearnPlayer from "./ListenLearnPlayer";
 
 const modes = [
   ["short", "Short summary"],
@@ -14,13 +20,17 @@ const modes = [
 export default function AiStudyAssistant({ courseId, lessonId }) {
   const summary = useAiSummary(courseId, lessonId);
   const explain = useAiExplain(courseId, lessonId);
+  const summaryAudio = useSummaryAudio(courseId, lessonId);
   const [result, setResult] = useState(null);
   const [question, setQuestion] = useState("");
+  const retryAudio = useRetryAudio();
+
   useEffect(() => {
     setResult(null);
     setQuestion("");
     summary.reset();
     explain.reset();
+    summaryAudio.reset();
     // Mutation reset functions are stable; the lesson identity drives this reset.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, lessonId]);
@@ -98,6 +108,26 @@ export default function AiStudyAssistant({ courseId, lessonId }) {
                 : modes.find(([mode]) => mode === result.mode)?.[1]}
             </strong>
           </div>
+          {result.mode !== "question" && (
+            <ListenLearnPlayer
+              audio={summaryAudio.data?.data || summaryAudio.data}
+              onRequestAudio={() => summaryAudio.mutate(result.mode)}
+              isRequesting={summaryAudio.isPending}
+              onRetry={() => {
+                const currentAudio = summaryAudio.data?.data || summaryAudio.data;
+                if (currentAudio?.id) {
+                  retryAudio.mutate(currentAudio.id, {
+                    onSuccess: () => {
+                      summaryAudio.mutate(result.mode);
+                    },
+                  });
+                } else {
+                  summaryAudio.mutate(result.mode);
+                }
+              }}
+              label="Listen to summary"
+            />
+          )}
           <div className="ai-content">{result.content}</div>
         </article>
       )}
