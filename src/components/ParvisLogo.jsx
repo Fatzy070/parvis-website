@@ -1,6 +1,8 @@
 import React from 'react';
 
-const ParvisLogo = ({ className, width = '140', height = 'auto', ...props }) => (
+// `auto` is not a valid SVG length. When no height is given, the browser derives
+// it from the viewBox aspect ratio, so the attribute is simply omitted.
+const ParvisLogo = ({ className, width = '140', height, ...props }) => (
   <svg
     viewBox="0 0 1774 887"
     width={width}
