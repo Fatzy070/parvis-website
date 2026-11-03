@@ -14,6 +14,7 @@ This repository contains the **Parvis Learner Web Application**, built with **Re
 - **Interactive Learning Workspace (`/learn/:id`)**
   - Distraction-free lesson player (`react-youtube`) with automatic playback position persistence and lesson completion tracking.
   - Built-in **Study Notes**, lesson summaries, **Practice Quizzes**, **Practical Exercises**, and **AI Study Assistant** powered by Google Gemini.
+  - **Listen & Learn Audio Player**: Natural voice narration for summaries (Short, Detailed, Key Points, Explain Simply) and saved Study Notes with play/pause, scrub slider, variable playback speed (`0.75×`, `1×`, `1.25×`, `1.5×`, `2×`), and retry controls.
   - Course-specific community discussions for peer learning and Q&A.
 - **Learner Dashboard & Progress Tracking (`/my-learning`, `/tutorials`)**
   - Track in-progress and completed courses, saved tutorials, daily learning streaks, and earned certificates.

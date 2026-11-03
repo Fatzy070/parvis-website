@@ -1,5 +1,32 @@
 const baseURL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
+export function resolveApiUrl(path) {
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (/^https?:\/\//i.test(baseURL)) {
+    try {
+      const url = new URL(baseURL);
+      const origin = url.origin;
+      const basePath = url.pathname.replace(/\/$/, "");
+
+      if (basePath && cleanPath.startsWith(basePath)) {
+        return `${origin}${cleanPath}`;
+      }
+      return `${origin}${basePath}${cleanPath}`;
+    } catch {
+      return `${baseURL}${cleanPath}`;
+    }
+  }
+
+  if (cleanPath.startsWith(baseURL)) {
+    return cleanPath;
+  }
+  return `${baseURL}${cleanPath}`;
+}
+
 const TOKEN_KEY = "learnhub_auth_token";
 export const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
 export const setStoredToken = (token) => { if (token) localStorage.setItem(TOKEN_KEY, token); };
