@@ -35,7 +35,7 @@ export default function ListenLearnPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(resolvedAudio?.duration || 0);
-  const [playbackRate, setPlaybackRate] = useState(1);
+  // const [playbackRate, setPlaybackRate] = useState(1);
   const [playerError, setPlayerError] = useState(null);
 
   const audioRef = useRef(null);
@@ -111,12 +111,12 @@ export default function ListenLearnPlayer({
     }
   };
 
-  const changeSpeed = (speed) => {
-    setPlaybackRate(speed);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = speed;
-    }
-  };
+  // const changeSpeed = (speed) => {
+  //   setPlaybackRate(speed);
+  //   if (audioRef.current) {
+  //     audioRef.current.playbackRate = speed;
+  //   }
+  // };
 
   const handleEnded = () => {
     setIsPlaying(false);
@@ -142,7 +142,7 @@ export default function ListenLearnPlayer({
       ) {
         setDuration(audioDuration);
       }
-      audioRef.current.playbackRate = playbackRate;
+      // audioRef.current.playbackRate = playbackRate;
     }
   };
 
@@ -265,7 +265,7 @@ export default function ListenLearnPlayer({
             <span className="player-tag">Listen &amp; Learn</span>
             <span className="narrator-name">Parvis Narrator</span>
           </div>
-          <div className="speed-selector" aria-label="Playback speed">
+          {/* <div className="speed-selector" aria-label="Playback speed">
             {SPEEDS.map((speed) => (
               <button
                 key={speed}
@@ -277,7 +277,7 @@ export default function ListenLearnPlayer({
                 {speed}×
               </button>
             ))}
-          </div>
+          </div> */}
         </div>
 
         <div className="player-controls-row">
